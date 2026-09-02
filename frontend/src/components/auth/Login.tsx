@@ -124,7 +124,7 @@ export default function Login() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+              className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
               placeholder={t('auth.emailPlaceholder')}
             />
             <label htmlFor="email" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
@@ -148,7 +148,7 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
                 placeholder={t('auth.passwordPlaceholder')}
               />
               <label htmlFor="password" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
@@ -186,7 +186,7 @@ export default function Login() {
           </div>
           
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl border border-white/5 bg-black/20 hover:bg-black/40 hover:border-white/10 transition-all duration-300 text-sm font-medium text-white cursor-pointer backdrop-blur-xl shadow-inner group">
+            <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl border border-form-border bg-form-bg hover:bg-form-hover transition-all duration-300 text-sm font-medium text-white cursor-pointer backdrop-blur-xl shadow-inner group">
               <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -195,7 +195,7 @@ export default function Login() {
               </svg>
               {t('auth.google')}
             </button>
-            <button type="button" onClick={handleGithubLogin} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl border border-white/5 bg-black/20 hover:bg-black/40 hover:border-white/10 transition-all duration-300 text-sm font-medium text-white cursor-pointer backdrop-blur-xl shadow-inner group">
+            <button type="button" onClick={handleGithubLogin} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl border border-form-border bg-form-bg hover:bg-form-hover transition-all duration-300 text-sm font-medium text-white cursor-pointer backdrop-blur-xl shadow-inner group">
               <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
               GitHub
             </button>

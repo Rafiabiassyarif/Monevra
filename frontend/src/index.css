@@ -31,6 +31,10 @@
   --color-slate-300: var(--text-muted, #cbd5e1);
   --color-slate-400: var(--text-dim, #94a3b8);
   --color-slate-500: var(--text-fade, #64748b);
+  
+  --color-form-bg: var(--form-bg, rgba(0, 0, 0, 0.2));
+  --color-form-hover: var(--form-hover, rgba(0, 0, 0, 0.4));
+  --color-form-border: var(--form-border, rgba(255, 255, 255, 0.05));
 }
 
 @layer base {
@@ -46,6 +50,10 @@
     --text-muted: #cbd5e1;
     --text-dim: #94a3b8;
     --text-fade: #64748b;
+    
+    --form-bg: rgba(0, 0, 0, 0.2);
+    --form-hover: rgba(0, 0, 0, 0.4);
+    --form-border: rgba(255, 255, 255, 0.05);
   }
   
   /* Light mode: applied when .light class is on <html> */
@@ -60,6 +68,10 @@
     --text-muted: #334155;
     --text-dim: #475569;
     --text-fade: #64748b;
+    
+    --form-bg: #ffffff;
+    --form-hover: #f8fafc;
+    --form-border: rgba(0, 0, 0, 0.15);
   }
 
   html {
@@ -93,33 +105,33 @@
   }
   
   .btn-premium {
-    @apply relative overflow-hidden bg-gradient-to-r from-brand-600 to-accent-600 text-white font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_25px_rgba(59,130,246,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
+    @apply relative overflow-hidden bg-gradient-to-r from-brand-600 to-accent-600 text-[#ffffff] font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_25px_rgba(59,130,246,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
   }
   .btn-premium::after {
     content: '';
-    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 pointer-events-none;
+    @apply absolute inset-0 bg-[#ffffff]/20 opacity-0 transition-opacity duration-300 pointer-events-none;
   }
   .btn-premium:hover::after {
     @apply opacity-100;
   }
 
   .btn-premium-danger {
-    @apply relative overflow-hidden bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(225,29,72,0.3)] hover:shadow-[0_6px_25px_rgba(225,29,72,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
+    @apply relative overflow-hidden bg-gradient-to-r from-red-600 to-rose-600 text-[#ffffff] font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(225,29,72,0.3)] hover:shadow-[0_6px_25px_rgba(225,29,72,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
   }
   .btn-premium-danger::after {
     content: '';
-    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 pointer-events-none;
+    @apply absolute inset-0 bg-[#ffffff]/20 opacity-0 transition-opacity duration-300 pointer-events-none;
   }
   .btn-premium-danger:hover::after {
     @apply opacity-100;
   }
 
   .btn-admin-premium {
-    @apply relative overflow-hidden bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(147,51,234,0.3)] hover:shadow-[0_6px_25px_rgba(147,51,234,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
+    @apply relative overflow-hidden bg-gradient-to-r from-purple-600 to-fuchsia-600 text-[#ffffff] font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(147,51,234,0.3)] hover:shadow-[0_6px_25px_rgba(147,51,234,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
   }
   .btn-admin-premium::after {
     content: '';
-    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 pointer-events-none;
+    @apply absolute inset-0 bg-[#ffffff]/20 opacity-0 transition-opacity duration-300 pointer-events-none;
   }
   .btn-admin-premium:hover::after {
     @apply opacity-100;
@@ -130,11 +142,11 @@
   }
 
   .btn-premium-success {
-    @apply relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_25px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
+    @apply relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-500 text-[#ffffff] font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_25px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl;
   }
   .btn-premium-success::after {
     content: '';
-    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 pointer-events-none;
+    @apply absolute inset-0 bg-[#ffffff]/20 opacity-0 transition-opacity duration-300 pointer-events-none;
   }
   .btn-premium-success:hover::after {
     @apply opacity-100;

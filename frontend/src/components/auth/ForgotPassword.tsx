@@ -100,7 +100,7 @@ export default function ForgotPassword() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                  className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
                   placeholder={t('auth.emailPlaceholder')}
                 />
                 <label htmlFor="email" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
@@ -120,7 +120,7 @@ export default function ForgotPassword() {
                   required
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-lg tracking-widest font-mono placeholder-transparent backdrop-blur-xl shadow-inner"
+                  className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-lg tracking-widest font-mono placeholder-transparent backdrop-blur-xl shadow-inner"
                   placeholder="000000"
                   maxLength={6}
                 />
@@ -141,7 +141,7 @@ export default function ForgotPassword() {
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                  className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
                   placeholder="••••••••"
                   minLength={6}
                 />

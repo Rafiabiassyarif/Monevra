@@ -48,7 +48,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="lg:col-span-2 lg:row-span-2 rounded-[2.5rem] bg-gradient-to-br from-surface-dark to-bg-dark border border-white/10 p-8 flex flex-col group overflow-hidden relative shadow-xl hover:shadow-brand-500/10 hover:border-white/20 transition-all duration-500"
+          className="lg:col-span-2 lg:row-span-2 rounded-[2.5rem] bg-gradient-to-br from-surface-dark to-bg-dark border border-border-dark p-8 flex flex-col group overflow-hidden relative shadow-xl hover:shadow-brand-500/10 hover:border-brand-500/30 transition-all duration-500"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="flex-1 relative z-10">
@@ -59,7 +59,7 @@ export default function FeaturesSection() {
             <p className="text-slate-400 text-lg leading-relaxed">{t('features.card1Desc')}</p>
           </div>
           {/* Visual Mockup inside card */}
-          <div className="mt-8 relative h-48 w-full rounded-2xl bg-white/5 border border-white/10 overflow-hidden group-hover:border-white/20 transition-colors">
+          <div className="mt-8 relative h-48 w-full rounded-2xl bg-surface-hover border border-border-dark overflow-hidden group-hover:border-brand-500/30 transition-colors">
             <div className="absolute inset-0 bg-gradient-to-t from-brand-500/20 to-transparent opacity-50"></div>
             <svg className="absolute bottom-0 w-full h-full drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 100">
               <path d="M0,80 Q20,60 40,90 T80,50 T100,70 L100,100 L0,100 Z" fill="rgba(96, 165, 250, 0.1)" />
@@ -74,7 +74,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="lg:col-span-2 rounded-[2.5rem] bg-surface-dark border border-white/10 p-8 flex flex-col justify-center group relative overflow-hidden shadow-xl hover:shadow-accent-500/10 hover:border-white/20 transition-all duration-500"
+          className="lg:col-span-2 rounded-[2.5rem] bg-surface-dark border border-border-dark p-8 flex flex-col justify-center group relative overflow-hidden shadow-xl hover:shadow-accent-500/10 hover:border-accent-500/30 transition-all duration-500"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4 group-hover:bg-accent-500/20 transition-colors duration-500"></div>
           <div className="relative z-10 flex items-start gap-6">
@@ -94,7 +94,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="rounded-[2.5rem] bg-surface-dark border border-white/10 p-8 flex flex-col items-start group hover:border-white/20 hover:-translate-y-2 transition-all duration-300 shadow-lg"
+          className="rounded-[2.5rem] bg-surface-dark border border-border-dark p-8 flex flex-col items-start group hover:border-cyan-500/30 hover:-translate-y-2 transition-all duration-300 shadow-lg"
         >
           <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-6 border border-cyan-500/20">
             <PieChart className="w-7 h-7" />
@@ -109,7 +109,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="rounded-[2.5rem] bg-surface-dark border border-white/10 p-8 flex flex-col items-start group hover:border-white/20 hover:-translate-y-2 transition-all duration-300 shadow-lg"
+          className="rounded-[2.5rem] bg-surface-dark border border-border-dark p-8 flex flex-col items-start group hover:border-blue-500/30 hover:-translate-y-2 transition-all duration-300 shadow-lg"
         >
           <div className="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-6 border border-blue-500/20">
             <Download className="w-7 h-7" />

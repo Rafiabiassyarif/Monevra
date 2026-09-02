@@ -147,7 +147,7 @@ export default function ContactSection() {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-white placeholder:text-slate-500 transition-all"
+                      className="w-full px-5 py-4 bg-form-bg border border-form-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-200 placeholder:text-slate-500 transition-all"
                       placeholder={t('contact.namePlaceholder')}
                     />
                   </div>
@@ -160,7 +160,7 @@ export default function ContactSection() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-white placeholder:text-slate-500 transition-all"
+                      className="w-full px-5 py-4 bg-form-bg border border-form-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-200 placeholder:text-slate-500 transition-all"
                       placeholder={t('contact.emailPlaceholder')}
                     />
                   </div>
@@ -175,7 +175,7 @@ export default function ContactSection() {
                     required
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-white placeholder:text-slate-500 transition-all"
+                    className="w-full px-5 py-4 bg-form-bg border border-form-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-200 placeholder:text-slate-500 transition-all"
                     placeholder={t('contact.subjectPlaceholder')}
                   />
                 </div>
@@ -189,7 +189,7 @@ export default function ContactSection() {
                     rows={5}
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-white placeholder:text-slate-500 resize-none transition-all"
+                    className="w-full px-5 py-4 bg-form-bg border border-form-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-slate-200 placeholder:text-slate-500 resize-none transition-all"
                     placeholder={t('contact.messagePlaceholder')}
                   ></textarea>
                 </div>

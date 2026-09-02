@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
 import multer from 'multer';
+import compression from 'compression';
 
 import { hashPassword, comparePassword, signToken, authenticateToken, requireAdmin } from './auth.js';
 
@@ -53,7 +54,22 @@ const pool = mysql.createPool({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(helmet({ contentSecurityPolicy: false }));
+// Trust proxy: benar kalau deploy di belakang Nginx/Caddy/reverse proxy (IP client utk rate limit)
+app.set('trust proxy', 1);
+app.use(compression());
+const isProd = process.env.NODE_ENV === 'production';
+app.use(helmet({
+  contentSecurityPolicy: isProd ? {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'"],
+    },
+  } : false,
+}));
 const allowedOrigins = process.env.APP_URL ? process.env.APP_URL.split(',') : ['http://localhost:3000'];
 app.use(cors({ origin: allowedOrigins, credentials: true, allowedHeaders: ['Content-Type', 'Authorization'] }));
 
@@ -1218,7 +1234,6 @@ app.get('/api/admin/backup', asyncHandler((req, res) => {
 app.use((err, req, res, next) => {
   console.error('[Monevra Error]', err.message || err);
   if (res.headersSent) return;
-  const isProd = process.env.NODE_ENV === 'production';
   res.status(err.status || 500).json({
     message: isProd ? 'Terjadi kesalahan server. Silakan coba lagi.' : (err.message || 'Terjadi kesalahan server.'),
   });

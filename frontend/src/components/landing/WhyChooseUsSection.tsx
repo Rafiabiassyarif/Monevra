@@ -62,7 +62,7 @@ export default function WhyChooseUsSection() {
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
             key={i} 
-            className="p-10 rounded-[2.5rem] bg-surface-dark border border-white/5 hover:border-white/20 transition-all duration-300 shadow-xl relative overflow-hidden group hover:-translate-y-2"
+            className="p-10 rounded-[2.5rem] bg-surface-dark border border-border-dark hover:border-brand-500/30 transition-all duration-300 shadow-xl relative overflow-hidden group hover:-translate-y-2"
           >
             <div className={`absolute -right-10 -top-10 w-40 h-40 ${item.bg} rounded-full blur-[50px] opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
             <div className={`w-14 h-14 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center mb-8 border ${item.border}`}>

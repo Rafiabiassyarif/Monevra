@@ -107,7 +107,7 @@ export default function SecurityLogs() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="text-slate-500 border-b border-white/5 text-xs uppercase tracking-wider bg-black/20">
+              <tr className="text-slate-500 border-b border-border-dark text-xs uppercase tracking-wider bg-surface-dark">
                 <th className="py-4 px-6 font-medium">Aksi</th>
                 <th className="py-4 px-6 font-medium">Target</th>
                 <th className="py-4 px-6 font-medium">IP Address</th>

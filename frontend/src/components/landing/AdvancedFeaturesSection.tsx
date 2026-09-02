@@ -81,9 +81,9 @@ export default function AdvancedFeaturesSection() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               key={i} 
-              className="p-8 rounded-3xl bg-surface-dark border border-white/5 hover:border-brand-500/30 hover:bg-surface-dark/80 transition-all duration-300 group hover:-translate-y-1 shadow-lg"
+              className="p-8 rounded-3xl bg-surface-dark border border-border-dark hover:border-brand-500/30 hover:bg-surface-dark transition-all duration-300 group hover:-translate-y-1 shadow-lg"
             >
-              <div className="w-12 h-12 rounded-2xl bg-white/5 text-slate-300 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 group-hover:text-brand-400 transition-colors">
+              <div className="w-12 h-12 rounded-2xl bg-surface-hover text-slate-300 flex items-center justify-center mb-6 group-hover:bg-brand-500/20 group-hover:text-brand-400 transition-colors">
                 <feature.icon className="w-6 h-6" />
               </div>
               <h3 className="font-display font-bold text-xl text-white mb-3 group-hover:text-brand-300 transition-colors">{feature.title}</h3>

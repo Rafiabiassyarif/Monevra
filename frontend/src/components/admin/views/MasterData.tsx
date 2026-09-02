@@ -137,7 +137,7 @@ function CategoriesManager({ showToast }: { showToast: (m: string) => void }) {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead>
-            <tr className="text-slate-500 border-b border-white/5 text-xs uppercase tracking-wider bg-black/20">
+            <tr className="text-slate-500 border-b border-border-dark text-xs uppercase tracking-wider bg-surface-dark">
               <th className="py-4 px-6 font-medium">Nama Kategori</th>
               <th className="py-4 px-6 font-medium">Tipe</th>
               <th className="py-4 px-6 font-medium text-right">Aksi</th>
@@ -337,7 +337,7 @@ function CurrenciesManager({ showToast }: { showToast: (m: string) => void }) {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead>
-            <tr className="text-slate-500 border-b border-white/5 text-xs uppercase tracking-wider bg-black/20">
+            <tr className="text-slate-500 border-b border-border-dark text-xs uppercase tracking-wider bg-surface-dark">
               <th className="py-4 px-6 font-medium">Kode (Base IDR)</th>
               <th className="py-4 px-6 font-medium">Nilai Tukar (Rp)</th>
               <th className="py-4 px-6 font-medium text-right">Aksi</th>

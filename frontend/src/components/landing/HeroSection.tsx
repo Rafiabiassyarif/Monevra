@@ -87,7 +87,7 @@ export default function HeroSection() {
         <motion.div 
           animate={{ y: [-12, 12, -12] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[340px] rounded-[2rem] border border-white/10 bg-[#161f33] shadow-[0_30px_80px_rgba(0,0,0,0.6)] ring-1 ring-white/5 z-30 p-8 overflow-hidden"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[340px] rounded-[2rem] border border-border-dark bg-surface-dark shadow-2xl shadow-slate-900/20 z-30 p-8 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/10 blur-[100px] rounded-full pointer-events-none" />
           <div className="relative z-10 flex justify-between items-start mb-8">
@@ -115,7 +115,7 @@ export default function HeroSection() {
               <path d="M0,100 L0,50 C30,40 40,80 70,30 C85,5 95,20 100,20 L100,100 Z" fill="url(#heroSparkline)" />
               <path d="M0,50 C30,40 40,80 70,30 C85,5 95,20 100,20" fill="none" stroke="#38bdf8" strokeWidth="3" filter="url(#glowChart)" />
               <g transform="translate(100, 20)">
-                <ellipse cx="0" cy="0" rx="8" ry="3" fill="white" filter="url(#glowChart)" />
+                <ellipse cx="0" cy="0" rx="8" ry="3" fill="#38bdf8" filter="url(#glowChart)" />
                 <ellipse cx="0" cy="0" rx="4" ry="1.5" fill="#38bdf8" />
               </g>
             </svg>
@@ -126,14 +126,14 @@ export default function HeroSection() {
         <motion.div 
           animate={{ y: [0, -15, 0], rotateZ: [-12, -10, -12] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute left-[8%] top-[2%] w-[340px] rounded-[1.5rem] bg-gradient-to-br from-[#1a5a9c] to-[#0f3c6e] shadow-2xl p-6 z-10 overflow-hidden group"
+          className="absolute left-[8%] top-[2%] w-[340px] rounded-[1.5rem] bg-surface-dark border border-border-dark shadow-2xl shadow-slate-900/20 p-6 z-10 overflow-hidden group"
         >
           <div className="absolute inset-0 bg-white/5 opacity-50 mix-blend-overlay pointer-events-none rounded-[1.5rem]"></div>
           <div className="flex justify-between items-center mb-12 relative z-10">
             <span className="font-display font-bold text-white text-xl tracking-widest whitespace-nowrap">{t('heroCards.virtualCard')}</span>
-            <svg className="w-10 h-10" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="12" fill="white" fillOpacity="0.4"/>
-              <circle cx="24" cy="12" r="12" fill="white" fillOpacity="0.4"/>
+            <svg className="w-10 h-10 text-slate-300" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="12" fill="currentColor" fillOpacity="0.4"/>
+              <circle cx="24" cy="12" r="12" fill="currentColor" fillOpacity="0.4"/>
             </svg>
           </div>
           <div className="font-mono text-white/90 tracking-[0.25em] mb-6 relative z-10 whitespace-nowrap text-lg">{t('heroCards.cardNumber')}</div>
@@ -147,7 +147,7 @@ export default function HeroSection() {
         <motion.div 
           animate={{ y: [0, 20, 0], rotateZ: [5, 7, 5] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute right-[5%] bottom-[10%] w-[320px] rounded-3xl border border-white/5 bg-[#1a2130] shadow-[0_40px_80px_rgba(0,0,0,0.5)] p-6 z-40"
+          className="absolute right-[5%] bottom-[10%] w-[320px] rounded-3xl border border-border-dark bg-surface-dark shadow-2xl shadow-slate-900/20 p-6 z-40"
         >
           <div className="text-sm font-semibold text-white mb-6 flex items-center justify-between">
             <span className="whitespace-nowrap">{t('heroCards.recentTransaction')}</span>
@@ -183,10 +183,10 @@ export default function HeroSection() {
         <motion.div 
           animate={{ y: [-10, 8, -10] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-          className="absolute left-[8%] bottom-[12%] w-[320px] rounded-3xl border border-white/5 bg-[#171e2b] shadow-[0_30px_60px_rgba(0,0,0,0.4)] p-5 z-40"
+          className="absolute left-[8%] bottom-[12%] w-[320px] rounded-3xl border border-border-dark bg-surface-dark shadow-2xl shadow-slate-900/20 p-5 z-40"
         >
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#202d40] flex items-center justify-center shrink-0 border border-white/5">
+            <div className="w-12 h-12 rounded-full bg-surface-hover flex items-center justify-center shrink-0 border border-border-dark">
               <span className="text-amber-300 font-bold text-xl">✨</span>
             </div>
             <div className="min-w-0 flex flex-col justify-center mt-1">

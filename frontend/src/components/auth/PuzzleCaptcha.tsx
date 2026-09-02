@@ -38,7 +38,7 @@ export default function PuzzleCaptcha({ onVerify }: PuzzleCaptchaProps) {
     <div className="w-full mx-auto my-6 relative group">
       <div 
         ref={containerRef}
-        className="relative h-14 rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden backdrop-blur-md flex items-center shadow-inner"
+        className="relative h-14 rounded-2xl border border-form-border bg-form-bg overflow-hidden backdrop-blur-md flex items-center shadow-inner"
       >
         {/* Dynamic progress background */}
         <motion.div 
@@ -71,7 +71,7 @@ export default function PuzzleCaptcha({ onVerify }: PuzzleCaptchaProps) {
               dragMomentum={false}
               onDragEnd={handleDragEnd}
               style={{ x }}
-              className="absolute left-1 top-1 bottom-1 w-12 bg-surface-dark/90 rounded-xl border border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center cursor-grab active:cursor-grabbing z-20 hover:border-brand-400 hover:bg-surface-dark transition-colors"
+              className="absolute left-1 top-1 bottom-1 w-12 bg-surface-dark rounded-xl border border-border-dark shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center cursor-grab active:cursor-grabbing z-20 hover:border-brand-400 transition-colors"
             >
               <div className="flex gap-[3px]">
                 <div className="w-[2px] h-4 bg-slate-400 rounded-full" />

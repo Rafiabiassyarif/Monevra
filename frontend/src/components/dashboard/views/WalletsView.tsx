@@ -39,27 +39,27 @@ export default function WalletsView() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Total Balance Summary Card */}
-        <div className="rounded-[2rem] p-6 relative overflow-hidden bg-gradient-to-br from-brand-600 to-indigo-800 shadow-2xl shadow-brand-500/30 border border-white/10 group">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 blur-3xl rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none group-hover:bg-white/20 transition-all duration-700" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent-400/20 blur-2xl rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none group-hover:bg-accent-400/30 transition-all duration-700" />
+        <div className="rounded-[2rem] p-6 relative overflow-hidden bg-surface-dark shadow-2xl shadow-slate-900/10 border border-border-dark group">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/5 blur-3xl rounded-full translate-x-1/3 -translate-y-1/3 pointer-events-none group-hover:bg-brand-500/10 transition-all duration-700" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent-500/5 blur-2xl rounded-full -translate-x-1/3 translate-y-1/3 pointer-events-none group-hover:bg-accent-500/10 transition-all duration-700" />
 
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md text-white border border-white/20 shadow-inner">
+              <div className="p-2.5 rounded-xl bg-surface-hover backdrop-blur-md text-slate-300 border border-border-dark shadow-sm">
                 <WalletIcon size={20} />
               </div>
-              <span className="font-semibold text-white/80 uppercase tracking-wider text-xs">{t('custom.walletNetWorth')}</span>
+              <span className="font-semibold text-slate-400 uppercase tracking-wider text-xs">{t('custom.walletNetWorth')}</span>
             </div>
-            <div className="text-4xl font-display font-bold text-white tracking-tight mb-3 drop-shadow-md">
+            <div className="text-4xl font-display font-bold text-slate-200 tracking-tight mb-3">
               {formatCurrency(totalBalance, currency)}
             </div>
-            <p className="text-sm text-white/70 font-medium">
+            <p className="text-sm text-slate-400 font-medium">
               {t('custom.walletTotalIn')} {wallets.length} {t('custom.walletWallets')}
             </p>
             {wallets.length === 0 && (
               <button
                 onClick={() => openModal()}
-                className="mt-4 text-xs font-semibold text-accent-300 hover:text-white transition-colors flex items-center gap-1"
+                className="mt-4 text-xs font-semibold text-brand-500 hover:text-brand-400 transition-colors flex items-center gap-1"
               >
                 <Plus size={12} /> {t('custom.walletAddFirst')}
               </button>
@@ -100,10 +100,10 @@ const WalletCard: React.FC<{ wallet: Wallet; onEdit: () => void; onDelete: () =>
   const { t } = useLanguage();
   const getIcon = () => {
     switch (wallet.type) {
-      case 'Bank': return <Building2 size={24} className="text-white" />;
-      case 'Crypto': return <Smartphone size={24} className="text-white" />;
-      case 'eWallet': return <Globe size={24} className="text-white" />;
-      default: return <CreditCard size={24} className="text-white" />;
+      case 'Bank': return <Building2 size={24} className="text-slate-300" />;
+      case 'Crypto': return <Smartphone size={24} className="text-slate-300" />;
+      case 'eWallet': return <Globe size={24} className="text-slate-300" />;
+      default: return <CreditCard size={24} className="text-slate-300" />;
     }
   };
 
@@ -113,11 +113,7 @@ const WalletCard: React.FC<{ wallet: Wallet; onEdit: () => void; onDelete: () =>
     eWallet: t('custom.walletTypeEwallet'),
   };
 
-  const cardGradient = wallet.type === 'Bank'
-    ? 'from-[#1e2240] via-[#151929] to-[#0d1018]'
-    : wallet.type === 'Crypto'
-    ? 'from-[#2a1e0d] via-[#1a1408] to-[#0d0a05]'
-    : 'from-[#0d2420] via-[#091a17] to-[#050e0c]';
+  const cardGradient = 'bg-surface-dark';
 
   const glowColor = wallet.type === 'Bank'
     ? 'from-blue-500/20 to-indigo-600/20'
@@ -126,10 +122,10 @@ const WalletCard: React.FC<{ wallet: Wallet; onEdit: () => void; onDelete: () =>
     : 'from-emerald-400/20 to-teal-600/20';
 
   const accentColor = wallet.type === 'Bank'
-    ? 'border-blue-500/20'
+    ? 'border-blue-500/30'
     : wallet.type === 'Crypto'
-    ? 'border-amber-500/20'
-    : 'border-emerald-500/20';
+    ? 'border-amber-500/30'
+    : 'border-emerald-500/30';
 
   return (
     <motion.div
@@ -140,15 +136,15 @@ const WalletCard: React.FC<{ wallet: Wallet; onEdit: () => void; onDelete: () =>
       {/* Outer glow on hover */}
       <div className={`absolute inset-0 bg-gradient-to-br ${glowColor} rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-600 scale-105`} />
 
-      <div className={`relative rounded-[2rem] overflow-hidden border ${accentColor} shadow-2xl bg-gradient-to-br ${cardGradient}`}
+      <div className={`relative rounded-[2rem] overflow-hidden border ${accentColor} shadow-xl ${cardGradient}`}
         style={{ minHeight: '220px' }}
       >
         {/* Subtle sheen line at the top */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         {/* Background texture circles */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/[0.03] blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/[0.03] blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-surface-hover blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-surface-hover blur-2xl pointer-events-none" />
 
         <div className="p-6 flex flex-col h-full" style={{ minHeight: '220px' }}>
           {/* Top row: Chip + Contactless + Action buttons */}
@@ -199,30 +195,30 @@ const WalletCard: React.FC<{ wallet: Wallet; onEdit: () => void; onDelete: () =>
 
           {/* Middle: wallet name + account number */}
           <div className="mt-6">
-            <h3 className="text-lg font-bold text-white tracking-widest uppercase drop-shadow-sm">{wallet.name}</h3>
+            <h3 className="text-lg font-bold text-slate-200 tracking-widest uppercase">{wallet.name}</h3>
             {wallet.accountNumber ? (
-              <p className="text-xs text-white/50 font-mono tracking-[0.3em] mt-1">{wallet.accountNumber}</p>
+              <p className="text-xs text-slate-400 font-mono tracking-[0.3em] mt-1">{wallet.accountNumber}</p>
             ) : (
-              <p className="text-xs text-white/25 font-mono tracking-[0.3em] mt-1">•••• •••• ••••</p>
+              <p className="text-xs text-slate-500 font-mono tracking-[0.3em] mt-1">•••• •••• ••••</p>
             )}
           </div>
 
           {/* Bottom row: balance + type badge + icon */}
-          <div className="mt-5 pt-4 border-t border-white/10 flex justify-between items-end">
+          <div className="mt-5 pt-4 border-t border-border-dark flex justify-between items-end">
             <div>
-              <div className="text-[9px] font-semibold text-white/40 uppercase tracking-[0.2em] mb-1">
+              <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-1">
                 {t('custom.walletBalance') || 'Balance'}
               </div>
-              <div className={`text-xl font-display font-bold tracking-tight ${wallet.balance < 0 ? 'text-red-400' : 'text-white'}`}>
+              <div className={`text-xl font-display font-bold tracking-tight ${wallet.balance < 0 ? 'text-red-400' : 'text-slate-200'}`}>
                 {formatCurrency(wallet.balance, currency)}
               </div>
               {wallet.balance < 0 && <p className="text-[9px] text-red-400 mt-0.5">{t('custom.walletsNegative') || 'Negative'}</p>}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[9px] uppercase font-bold tracking-widest text-white/40 bg-white/[0.07] px-2.5 py-1 rounded-full border border-white/10">
+              <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400 bg-surface-hover px-2.5 py-1 rounded-full border border-border-dark">
                 {typeLabel[wallet.type] || wallet.type}
               </span>
-              <div className="w-9 h-9 rounded-full bg-white/[0.08] flex items-center justify-center border border-white/10 shadow-inner">
+              <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center border border-border-dark shadow-sm">
                 {getIcon()}
               </div>
             </div>

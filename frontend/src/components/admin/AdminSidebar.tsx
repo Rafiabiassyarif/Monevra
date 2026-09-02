@@ -67,7 +67,7 @@ export default function AdminSidebar({ open, setOpen, activeTab, setActiveTab, o
         })}
       </div>
 
-      <div className="p-4 border-t border-white/10 bg-black/20">
+      <div className="p-4 border-t border-border-dark bg-surface-dark">
         <button 
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all group"

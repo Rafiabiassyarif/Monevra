@@ -172,7 +172,7 @@ function MetricCard({ title, value, detail, icon: Icon, tone = 'cyan' }: { title
         <div className={`p-2 rounded-xl border ${toneClass}`}>
           <Icon className="w-5 h-5" />
         </div>
-        <span className="text-xs text-slate-500 font-medium bg-black/20 px-2 py-1 rounded-lg">{detail}</span>
+        <span className="text-xs text-slate-500 font-medium bg-surface-hover px-2 py-1 rounded-lg">{detail}</span>
       </div>
       <div className="text-3xl font-display font-bold text-slate-200 relative z-10 truncate">{value}</div>
       <div className="text-sm font-medium text-slate-400 mt-1 relative z-10">{title}</div>

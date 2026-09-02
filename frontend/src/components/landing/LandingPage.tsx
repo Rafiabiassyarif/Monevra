@@ -102,7 +102,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 to="/register"
-                className="px-5 py-2.5 rounded-full text-sm font-medium bg-[#0f172a] text-[#ffffff] dark:bg-[#ffffff] dark:text-[#000000] hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-lg"
+                className="px-5 py-2.5 rounded-full text-sm font-medium bg-brand-500 text-white hover:bg-brand-600 transition-colors shadow-lg"
               >
                 {t('nav.getStarted')}
               </Link>
@@ -145,7 +145,7 @@ export default function LandingPage() {
                 <Link
                   to="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-3 rounded-full text-center font-medium bg-[#0f172a] text-[#ffffff] dark:bg-[#ffffff] dark:text-[#000000]"
+                  className="w-full py-3 rounded-full text-center font-medium bg-brand-500 text-white hover:bg-brand-600"
                 >
                   {t('nav.getStarted')}
                 </Link>
