@@ -20,6 +20,15 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const port = Number(process.env.PORT || process.env.SERVER_PORT || 3001);
 
+// Fail-fast di production: jangan start kalau JWT_SECRET lemah/tidak ada.
+if (process.env.NODE_ENV === 'production') {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret === 'dev_secret_change_in_production' || secret.length < 32) {
+    console.error('❌ JWT_SECRET tidak valid untuk production. Set JWT_SECRET (min 32 karakter) di .env sebelum start.');
+    process.exit(1);
+  }
+}
+
 // In-memory store for OTP codes (For demo/local use only. Real app would use Redis or DB table)
 const resetCodes = new Map();
 
@@ -1209,7 +1218,10 @@ app.get('/api/admin/backup', asyncHandler((req, res) => {
 app.use((err, req, res, next) => {
   console.error('[Monevra Error]', err.message || err);
   if (res.headersSent) return;
-  res.status(500).json({ message: err.message || 'Terjadi kesalahan server.' });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.status || 500).json({
+    message: isProd ? 'Terjadi kesalahan server. Silakan coba lagi.' : (err.message || 'Terjadi kesalahan server.'),
+  });
 });
 
 // --- Serve React Frontend ---
