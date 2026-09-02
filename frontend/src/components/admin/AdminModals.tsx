@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 import { X } from 'lucide-react';
 import { Transaction, Wallet, Budget } from '../../types';
 
@@ -31,6 +32,7 @@ export function AdminTransactionModal({
     type: item?.type || 'expense',
   });
   const [saving, setSaving] = useState(false);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,36 +55,36 @@ export function AdminTransactionModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-card rounded-[2rem] p-6 border border-white/10">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-display font-bold text-slate-200">{item ? 'Edit Transaksi' : 'Tambah Transaksi'}</h3>
+          <h3 className="text-xl font-display font-bold text-slate-200">{item ? t('custom.txEditTitle') : t('custom.txAddTitle')}</h3>
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white">
             <X size={20} />
           </button>
         </div>
         <div className="space-y-4">
-          <FormField label="Judul Transaksi">
+          <FormField label={t('custom.txFormTitle')}>
             <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Tipe">
+            <FormField label={t('custom.txFormType')}>
               <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value as any })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200">
-                <option value="expense">Pengeluaran</option>
-                <option value="income">Pemasukan</option>
+                <option value="expense">{t('custom.typeExpense')}</option>
+                <option value="income">{t('custom.typeIncome')}</option>
               </select>
             </FormField>
-            <FormField label="Kategori">
+            <FormField label={t('custom.txFormCategory')}>
               <input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
             </FormField>
           </div>
-          <FormField label="Jumlah">
+          <FormField label={t('custom.txFormAmount')}>
             <input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
-          <FormField label="Dompet">
+          <FormField label={t('custom.txFormWallet')}>
             <select value={form.wallet} onChange={e => setForm({ ...form, wallet: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required>
               {wallets.map(w => <option key={w.id} value={w.name}>{w.name}</option>)}
-              {wallets.length === 0 && <option value="">Tidak ada dompet</option>}
+              {wallets.length === 0 && <option value="">{t('custom.noWallets')}</option>}
             </select>
           </FormField>
-          <FormField label="Tanggal">
+          <FormField label={t('custom.txFormDate')}>
             <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
         </div>
@@ -110,6 +112,7 @@ export function AdminWalletModal({
     accountNumber: item?.accountNumber || '',
   });
   const [saving, setSaving] = useState(false);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,31 +135,31 @@ export function AdminWalletModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-card rounded-[2rem] p-6 border border-white/10">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-display font-bold text-slate-200">{item ? 'Edit Dompet' : 'Tambah Dompet'}</h3>
+          <h3 className="text-xl font-display font-bold text-slate-200">{item ? t('custom.walletEditTitle') : t('custom.walletAddTitle')}</h3>
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white">
             <X size={20} />
           </button>
         </div>
         <div className="space-y-4">
-          <FormField label="Nama Dompet">
+          <FormField label={t('custom.walletFormName')}>
             <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
-          <FormField label="Tipe Dompet">
+          <FormField label={t('custom.walletFormType')}>
             <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value as any })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200">
-              <option value="Bank">Bank</option>
-              <option value="eWallet">eWallet</option>
-              <option value="Crypto">Crypto</option>
+              <option value="Bank">{t('custom.typeBank')}</option>
+              <option value="eWallet">{t('custom.typeEWallet')}</option>
+              <option value="Crypto">{t('custom.typeCrypto')}</option>
             </select>
           </FormField>
-          <FormField label="Saldo">
+          <FormField label={t('custom.walletFormBalance')}>
             <input type="number" step="0.01" value={form.balance} onChange={e => setForm({ ...form, balance: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
-          <FormField label="Nomor Akun (Opsional)">
+          <FormField label={t('custom.walletFormAccount')}>
             <input value={form.accountNumber} onChange={e => setForm({ ...form, accountNumber: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" />
           </FormField>
         </div>
         <button disabled={saving} className="btn-admin-premium w-full disabled:opacity-60 disabled:cursor-not-allowed mt-6">
-          {saving ? 'Menyimpan...' : 'Simpan'}
+          {saving ? t('custom.saving') : t('custom.save')}
         </button>
       </form>
     </div>
@@ -177,6 +180,7 @@ export function AdminBudgetModal({
     limit: item?.limit?.toString() || '0',
   });
   const [saving, setSaving] = useState(false);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,21 +203,21 @@ export function AdminBudgetModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <form onSubmit={handleSubmit} className="relative z-10 w-full max-w-md glass-card rounded-[2rem] p-6 border border-white/10">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-display font-bold text-slate-200">{item ? 'Edit Budget' : 'Tambah Budget'}</h3>
+          <h3 className="text-xl font-display font-bold text-slate-200">{item ? t('custom.budgetEditTitle') : t('custom.budgetAddTitle')}</h3>
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-slate-400 hover:text-white">
             <X size={20} />
           </button>
         </div>
         <div className="space-y-4">
-          <FormField label="Kategori">
+          <FormField label={t('custom.txFormCategory')}>
             <input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
-          <FormField label="Limit Anggaran">
+          <FormField label={t('custom.budgetLimitLabel')}>
             <input type="number" step="0.01" value={form.limit} onChange={e => setForm({ ...form, limit: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
         </div>
         <button disabled={saving} className="btn-admin-premium w-full disabled:opacity-60 disabled:cursor-not-allowed mt-6">
-          {saving ? 'Menyimpan...' : 'Simpan'}
+          {saving ? t('custom.saving') : t('custom.save')}
         </button>
       </form>
     </div>

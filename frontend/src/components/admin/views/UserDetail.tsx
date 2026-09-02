@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { useAuth } from '../../../context/AuthContext';
 import {
   ArrowLeft,
@@ -43,6 +44,7 @@ interface UserDetailProps {
 }
 
 export default function UserDetail({ user, onBack }: UserDetailProps) {
+  const { t } = useLanguage();
   const { isAdmin } = useAuth();
   const [detail, setDetail] = useState<UserDetailData>(emptyDetail);
   const [loading, setLoading] = useState(true);
@@ -112,8 +114,8 @@ export default function UserDetail({ user, onBack }: UserDetailProps) {
     }
   };
 
-  const income = detail.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-  const expense = detail.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const income = detail.transactions.filter(t => t.type === 'income' && t.status === 'Completed').reduce((sum, t) => sum + Number(t.amount), 0);
+  const expense = detail.transactions.filter(t => t.type === 'expense' && t.status === 'Completed').reduce((sum, t) => sum + Number(t.amount), 0);
   const currency = user.currency || 'IDR';
 
   return (

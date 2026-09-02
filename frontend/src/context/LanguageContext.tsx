@@ -5,7 +5,7 @@ import { useFinance } from './FinanceContext';
 interface LanguageContextType {
   language: LanguageKey;
   setLanguage: (lang: LanguageKey) => void;
-  t: (key: string) => string;
+  t: (key: string, options?: { returnObjects?: boolean }) => any;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -20,9 +20,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     () => getValidLang(localStorage.getItem('language'))
   );
 
-  // Sync with user profile when it loads
+  // Sync with user profile when it loads — tapi pilihan lokal (localStorage) MENANG.
+  // Kalau user pilih bahasa di landing page (belum login), jangan ditimpa profile DB.
+  const [hasLocalChoice] = useState(() => !!localStorage.getItem('language'));
+
   useEffect(() => {
-    if (profile?.email && profile?.language && profile.language !== localLang) {
+    if (profile?.email && profile?.language && !hasLocalChoice && profile.language !== localLang) {
       const validProfileLang = getValidLang(profile.language);
       if (validProfileLang !== localLang) {
         setLocalLang(validProfileLang);
@@ -41,16 +44,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const translations: Record<LanguageKey, Translations> = { en, id };
 
   // Helper to get nested object property via string path like "dashboard.title"
-  const t = (path: string): string => {
+  const t = (path: string, options?: { returnObjects?: boolean }): any => {
     const keys = path.split('.');
     let current: any = translations[language] || translations['id'];
     for (const key of keys) {
       if (!current || current[key] === undefined) {
-        return path; // Fallback to key if not found
+        return ""; // Return empty string so || 'Fallback' works correctly!
       }
       current = current[key];
     }
-    return current as string;
+    return current;
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { AnimatePresence, motion } from 'motion/react';
@@ -19,6 +20,7 @@ interface DashboardPageProps {
 }
 
 export default function DashboardPage({ defaultTab }: DashboardPageProps) {
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
   const navigate = useNavigate();

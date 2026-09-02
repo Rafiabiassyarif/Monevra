@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { ShieldAlert, Lock, Key, AlertOctagon, Trash, RefreshCw } from 'lucide-react';
 import { apiRequest } from '../../../lib/api';
 
@@ -11,6 +12,7 @@ interface SecurityLog {
 }
 
 export default function SecurityLogs() {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState<SecurityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');

@@ -18,7 +18,7 @@ export default function OAuthCallback() {
     const code = searchParams.get('code');
     
     if (!code) {
-      setError('Kode otorisasi tidak ditemukan.');
+      setError(t('custom.oAuthErrNoCode'));
       setTimeout(() => navigate('/login'), 3000);
       return;
     }
@@ -48,7 +48,7 @@ export default function OAuthCallback() {
   }, [provider, searchParams, loginWithGoogle, loginWithGithub, navigate]);
 
   return (
-    <AuthLayout title="Autentikasi" subtitle={`Memproses login dengan ${provider === 'github' ? 'GitHub' : 'Google'}...`}>
+    <AuthLayout title={t('custom.oAuthTitle')} subtitle={`${t('custom.oAuthProcessing')} ${provider === 'github' ? 'GitHub' : 'Google'}...`}>
       <div className="flex flex-col items-center justify-center space-y-6 py-12">
         {error ? (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-start gap-3 w-full">

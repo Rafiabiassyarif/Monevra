@@ -13,6 +13,7 @@ export interface Profile {
   twoFactorEnabled?: boolean;
   notifEmail?: boolean;
   notifPush?: boolean;
+  gemini_api_key?: string;
 }
 
 interface FinancePayload {
@@ -32,6 +33,7 @@ interface FinanceContextType {
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   updateTransaction: (id: string, transaction: Omit<Transaction, 'id'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  deleteAllTransactions: () => Promise<void>;
   addWallet: (wallet: Omit<Wallet, 'id' | 'balance'> & { initialBalance: number }) => Promise<void>;
   updateWallet: (id: string, wallet: Partial<Omit<Wallet, 'id'>>) => Promise<void>;
   deleteWallet: (id: string) => Promise<void>;
@@ -41,7 +43,7 @@ interface FinanceContextType {
   addGoal: (goal: Omit<Goal, 'id'>) => Promise<void>;
   updateGoal: (id: string, goal: Omit<Goal, 'id'>) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
-  updateProfile: (profile: Profile) => Promise<void>;
+  updateProfile: (profile: Partial<Profile>) => Promise<void>;
   getTotalBalance: () => number;
   getMonthlyIncome: () => number;
   getMonthlyExpense: () => number;
@@ -70,7 +72,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       resetState();
       return;
     }
-    const data = await apiRequest<FinancePayload>(`/users/${user.uid}/finance`);
+    const userId = user.id || user.uid;
+    const data = await apiRequest<FinancePayload>(`/users/${userId}/finance`);
     setProfile(data.profile);
     setTransactions(data.transactions || []);
     setWallets(data.wallets || []);
@@ -80,80 +83,55 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadFinance().catch(console.error);
-  }, [user?.uid]);
-
-  const updateWalletLocal = async (id: string, updatedWallet: Partial<Omit<Wallet, 'id'>>) => {
-    if (!user) return;
-    await apiRequest(`/users/${user.uid}/wallets/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updatedWallet),
-    });
-  };
+  }, [user?.id, user?.uid]);
 
   const addTransaction = async (tx: Omit<Transaction, 'id'>) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/transactions`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/transactions`, {
       method: 'POST',
       body: JSON.stringify(tx),
     });
-
-    const walletToUpdate = wallets.find(w => w.name === tx.wallet);
-    if (walletToUpdate) {
-      const delta = tx.type === 'income' ? tx.amount : -Math.abs(tx.amount);
-      await updateWalletLocal(walletToUpdate.id, { balance: walletToUpdate.balance + delta });
-    }
     await loadFinance();
   };
 
   const updateTransaction = async (id: string, updatedTx: Omit<Transaction, 'id'>) => {
     if (!user) return;
-    const oldTx = transactions.find(t => t.id === id);
-
-    await apiRequest(`/users/${user.uid}/transactions/${id}`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/transactions/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updatedTx),
     });
-
-    if (oldTx) {
-      const oldWallet = wallets.find(w => w.name === oldTx.wallet);
-      const newWallet = wallets.find(w => w.name === updatedTx.wallet);
-
-      if (oldWallet && newWallet && oldWallet.id === newWallet.id) {
-        const oldDelta = oldTx.type === 'income' ? oldTx.amount : -Math.abs(oldTx.amount);
-        const newDelta = updatedTx.type === 'income' ? updatedTx.amount : -Math.abs(updatedTx.amount);
-        await updateWalletLocal(oldWallet.id, { balance: oldWallet.balance - oldDelta + newDelta });
-      } else {
-        if (oldWallet) {
-          const oldDelta = oldTx.type === 'income' ? oldTx.amount : -Math.abs(oldTx.amount);
-          await updateWalletLocal(oldWallet.id, { balance: oldWallet.balance - oldDelta });
-        }
-        if (newWallet) {
-          const newDelta = updatedTx.type === 'income' ? updatedTx.amount : -Math.abs(updatedTx.amount);
-          await updateWalletLocal(newWallet.id, { balance: newWallet.balance + newDelta });
-        }
-      }
-    }
     await loadFinance();
   };
 
   const deleteTransaction = async (id: string) => {
     if (!user) return;
+    const userId = user.id || user.uid;
     const txToDelete = transactions.find(t => t.id === id);
-    await apiRequest(`/users/${user.uid}/transactions/${id}`, { method: 'DELETE' });
+    await apiRequest(`/users/${userId}/transactions/${id}`, { method: 'DELETE' });
 
     if (txToDelete) {
       const walletToUpdate = wallets.find(w => w.name === txToDelete.wallet);
       if (walletToUpdate) {
-        const delta = txToDelete.type === 'income' ? txToDelete.amount : -Math.abs(txToDelete.amount);
-        await updateWalletLocal(walletToUpdate.id, { balance: walletToUpdate.balance - delta });
+        const delta = txToDelete.status === 'Completed' ? (txToDelete.type === 'income' ? txToDelete.amount : -Number(txToDelete.amount)) : 0;
+        await updateWallet(walletToUpdate.id, { balance: walletToUpdate.balance - delta });
       }
     }
     await loadFinance();
   };
 
+  const deleteAllTransactions = async () => {
+    if (!user) return;
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/transactions`, { method: 'DELETE' });
+    await loadFinance();
+  };
+
   const addWallet = async (wallet: Omit<Wallet, 'id' | 'balance'> & { initialBalance: number }) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/wallets`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/wallets`, {
       method: 'POST',
       body: JSON.stringify(wallet),
     });
@@ -161,71 +139,84 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   };
 
   const updateWallet = async (id: string, updatedWallet: Partial<Omit<Wallet, 'id'>>) => {
-    await updateWalletLocal(id, updatedWallet);
+    if (!user) return;
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/wallets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedWallet),
+    });
     await loadFinance();
   };
 
   const deleteWallet = async (id: string) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/wallets/${id}`, { method: 'DELETE' });
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/wallets/${id}`, { method: 'DELETE' });
     await loadFinance();
   };
 
   const addBudget = async (budget: Omit<Budget, 'id'>) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/budgets`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/budgets`, {
       method: 'POST',
       body: JSON.stringify(budget),
     });
     await loadFinance();
   };
 
-  const updateBudget = async (id: string, updatedBudget: Omit<Budget, 'id'>) => {
+  const updateBudget = async (id: string, budget: Omit<Budget, 'id'>) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/budgets/${id}`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/budgets/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(updatedBudget),
+      body: JSON.stringify(budget),
     });
     await loadFinance();
   };
 
   const deleteBudget = async (id: string) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/budgets/${id}`, { method: 'DELETE' });
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/budgets/${id}`, { method: 'DELETE' });
     await loadFinance();
   };
 
   const addGoal = async (goal: Omit<Goal, 'id'>) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/goals`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/goals`, {
       method: 'POST',
       body: JSON.stringify(goal),
     });
     await loadFinance();
   };
 
-  const updateGoal = async (id: string, updatedGoal: Omit<Goal, 'id'>) => {
+  const updateGoal = async (id: string, goal: Omit<Goal, 'id'>) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/goals/${id}`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/goals/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(updatedGoal),
+      body: JSON.stringify(goal),
     });
     await loadFinance();
   };
 
   const deleteGoal = async (id: string) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/goals/${id}`, { method: 'DELETE' });
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/goals/${id}`, { method: 'DELETE' });
     await loadFinance();
   };
 
-  const updateProfile = async (newProfile: Profile) => {
+  const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return;
-    await apiRequest(`/users/${user.uid}/profile`, {
+    const userId = user.id || user.uid;
+    await apiRequest(`/users/${userId}/profile`, {
       method: 'PUT',
-      body: JSON.stringify(newProfile),
+      body: JSON.stringify(updates),
     });
-    setProfile(newProfile);
+    await loadFinance();
   };
 
   const getTotalBalance = () => wallets.reduce((acc, w) => acc + w.balance, 0);
@@ -235,9 +226,9 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     return transactions
       .filter(t => {
         const d = new Date(t.date);
-        return t.type === 'income' && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        return t.type === 'income' && t.status === 'Completed' && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       })
-      .reduce((acc, t) => acc + t.amount, 0);
+      .reduce((acc, t) => acc + Number(t.amount), 0);
   };
 
   const getMonthlyExpense = () => {
@@ -245,16 +236,21 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     return transactions
       .filter(t => {
         const d = new Date(t.date);
-        return t.type === 'expense' && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        return t.type === 'expense' && t.status === 'Completed' && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       })
-      .reduce((acc, t) => acc + Math.abs(t.amount), 0);
+      .reduce((acc, t) => acc + Number(t.amount), 0);
   };
 
   return (
     <FinanceContext.Provider value={{
       transactions, wallets, budgets, goals, profile,
-      addTransaction, updateTransaction, deleteTransaction,
-      addWallet, updateWallet, deleteWallet,
+      addTransaction,
+      updateTransaction,
+      deleteTransaction,
+      deleteAllTransactions,
+      addWallet,
+      updateWallet,
+      deleteWallet,
       addBudget, updateBudget, deleteBudget,
       addGoal, updateGoal, deleteGoal,
       updateProfile,

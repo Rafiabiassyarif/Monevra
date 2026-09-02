@@ -37,15 +37,15 @@ export default function SettingsView() {
 
   const handleSaveProfile = async () => {
     if (!profile.name || !profile.email) {
-      showToast('error', 'Nama dan email tidak boleh kosong.');
+      showToast('error', t('validation.nameEmailRequired') || 'Name and email are required.');
       return;
     }
     setSaving(true);
     try {
       await updateProfile(profile);
-      showToast('success', 'Profil berhasil diperbarui!');
+      showToast('success', t('custom.settingsProfileUpdated'));
     } catch (err: any) {
-      showToast('error', err.message || 'Gagal menyimpan perubahan.');
+      showToast('error', err.message || t('custom.settingsProfileFailed'));
     } finally {
       setSaving(false);
     }
@@ -54,15 +54,15 @@ export default function SettingsView() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('error', 'Ukuran gambar maksimal 2MB');
+      if (file.size > 1 * 1024 * 1024) {
+        showToast('error', t('settings.photoTooLarge') || 'Ukuran foto maksimal 1MB.');
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
         // Update local state directly so it previews instantly, save later when clicking 'Simpan'
         setProfile({ ...profile, avatar: reader.result as string });
-        showToast('success', 'Foto berhasil dipilih (Klik Simpan untuk menerapkan)');
+        showToast('success', t('messages.photoSelected') || 'Photo selected (Click Save to apply)');
       };
       reader.readAsDataURL(file);
     }
@@ -70,15 +70,15 @@ export default function SettingsView() {
 
   const handlePasswordChange = async () => {
     if (!passwords.old) {
-      showToast('error', 'Masukkan sandi lama Anda');
+      showToast('error', t('custom.settingsEnterOldPass'));
       return;
     }
     if (passwords.new !== passwords.confirm) {
-      showToast('error', 'Konfirmasi kata sandi baru tidak cocok');
+      showToast('error', t('messages.passNoMatch') || 'Passwords do not match');
       return;
     }
     if (passwords.new.length < 6) {
-      showToast('error', 'Sandi baru minimal 6 karakter');
+      showToast('error', t('messages.passTooShort') || 'New password must be at least 6 characters');
       return;
     }
     
@@ -88,20 +88,20 @@ export default function SettingsView() {
         method: 'PUT',
         body: JSON.stringify({ oldPassword: passwords.old, newPassword: passwords.new })
       });
-      showToast('success', 'Kata sandi berhasil diubah!');
+      showToast('success', t('custom.settingsPasswordUpdated'));
       setPasswords({ old: '', new: '', confirm: '' });
     } catch (err: any) {
-      showToast('error', err.message || 'Gagal mengubah kata sandi');
+      showToast('error', err.message || t('custom.settingsPasswordFailed'));
     } finally {
       setPasswordSaving(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (confirm('APAKAH ANDA YAKIN? Tindakan ini akan menghapus semua data Anda secara permanen dan tidak dapat dipulihkan.')) {
-      const password = window.prompt('Masukkan kata sandi Anda untuk mengonfirmasi penghapusan akun:');
+    if (confirm(t('custom.settingsDeleteConfirm'))) {
+      const password = window.prompt(t('custom.settingsDeletePrompt'));
       if (!password) {
-        showToast('error', 'Penghapusan akun dibatalkan.');
+        showToast('error', t('custom.settingsDeleteCancelled'));
         return;
       }
       try {
@@ -111,7 +111,7 @@ export default function SettingsView() {
         });
         logout();
       } catch (e: any) {
-        showToast('error', e.message || 'Gagal menghapus akun.');
+        showToast('error', e.message || t('custom.settingsDeleteFailed'));
       }
     }
   };
@@ -122,7 +122,7 @@ export default function SettingsView() {
     { id: 'profile', icon: User, label: t('settings.tabs.profile') },
     { id: 'security', icon: Shield, label: t('settings.tabs.security') },
     { id: 'preferences', icon: Globe, label: t('settings.tabs.preferences') },
-    { id: 'danger', icon: Trash2, label: t('settings.tabs.danger'), danger: true },
+    { id: 'danger', icon: Trash2, label: t('custom.settingsTabsDanger'), danger: true },
   ];
 
   return (
@@ -148,7 +148,7 @@ export default function SettingsView() {
 
       <div className="mb-8">
         <h2 className="text-3xl font-display font-bold text-slate-200">{t('settings.title')}</h2>
-        <p className="text-slate-400 text-sm mt-1">Kelola informasi pribadi, keamanan akun, dan preferensi aplikasi Anda.</p>
+        <p className="text-slate-400 text-sm mt-1">{t('custom.settingsSubtitle')}</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
@@ -193,17 +193,31 @@ export default function SettingsView() {
               >
                 <div className="glass-card rounded-[2rem] p-8 border border-border-dark shadow-xl shadow-black/5">
                   <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-8">
-                    <div className="relative group cursor-pointer shrink-0" onClick={() => fileInputRef.current?.click()}>
-                      <div className="absolute inset-0 bg-brand-500/20 blur-2xl rounded-full scale-125 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <img 
-                        src={profile.avatar || defaultAvatar}
-                        alt="Avatar"
-                        className="w-32 h-32 rounded-[2rem] bg-surface-dark border border-border-dark relative z-10 shadow-xl object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/50 rounded-[2rem] z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Camera className="w-8 h-8 text-white mb-1" />
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Ubah Foto</span>
+                    <div className="relative group shrink-0">
+                      <div className="relative cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                        <div className="absolute inset-0 bg-brand-500/20 blur-2xl rounded-full scale-125 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <img 
+                          src={profile.avatar || defaultAvatar}
+                          alt={t('custom.avatarLabel')}
+                          className="w-32 h-32 rounded-[2rem] bg-surface-dark border border-border-dark relative z-10 shadow-xl object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/50 rounded-[2rem] z-20 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Camera className="w-8 h-8 text-white mb-1" />
+                          <span className="text-[10px] font-bold text-white uppercase tracking-wider">{t('settings.profileChangePhoto') || 'Ubah Foto'}</span>
+                        </div>
                       </div>
+                      
+                      {profile.avatar && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setProfile({ ...profile, avatar: null }); }}
+                          className="absolute -top-2 -right-2 w-8 h-8 bg-red-500/90 hover:bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/20 z-30 transition-transform hover:scale-110"
+                          title={t('settings.deletePhoto') || 'Hapus Foto Profil'}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                      
                       <input 
                         type="file" 
                         ref={fileInputRef} 
@@ -218,10 +232,10 @@ export default function SettingsView() {
                       <p className="text-slate-400 text-sm mb-4">{profile.email}</p>
                       <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-bold uppercase tracking-wider">
-                          {user?.role === 'admin' ? '👑 Administrator' : '🚀 Anggota Aktif'}
+                          {user?.role === 'admin' ? (t('settings.roleAdmin') || '👑 Administrator') : (t('settings.roleUser') || '🚀 Anggota Aktif')}
                         </span>
                         <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-hover border border-border-dark text-slate-400 text-xs font-bold uppercase tracking-wider">
-                          Bergabung 2026
+                          {t('custom.settingsProfileJoined') || 'Bergabung 2026'}
                         </span>
                       </div>
                     </div>
@@ -258,6 +272,21 @@ export default function SettingsView() {
                         className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50 transition-all shadow-inner"
                       />
                     </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">
+                        Gemini API Key <span className="text-[10px] text-brand-400 normal-case bg-brand-500/10 px-2 py-0.5 rounded ml-2">({t('settings.optional') || 'Opsional'})</span>
+                      </label>
+                      <input 
+                        type="password" 
+                        value={profile.gemini_api_key || ''}
+                        onChange={e => setProfile({...profile, gemini_api_key: e.target.value})}
+                        placeholder={t('custom.geminiKeyHint')}
+                        className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50 transition-all shadow-inner"
+                      />
+                      <p className="text-xs text-slate-500 mt-2">
+                        {t('settings.geminiHelp') || 'Gunakan kunci Anda sendiri untuk OCR tanpa batasan. Dapatkan secara gratis di'} <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:underline">Google AI Studio</a>.
+                      </p>
+                    </div>
                   </div>
 
                   <div className="mt-8 flex justify-end">
@@ -286,7 +315,7 @@ export default function SettingsView() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-slate-200">{t('settings.sections.passwords')}</h3>
-                      <p className="text-xs text-slate-400 mt-1">Pastikan kata sandi Anda kuat dan tidak digunakan di tempat lain.</p>
+                      <p className="text-xs text-slate-400 mt-1">{t('custom.settingsSecurityPassDesc')}</p>
                     </div>
                   </div>
                   
@@ -329,7 +358,7 @@ export default function SettingsView() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-slate-200">{t('settings.sections.twoFactor')}</h3>
-                      <p className="text-sm text-slate-400 mt-1 max-w-md">Amankan akun Anda dengan mewajibkan kode token khusus setiap kali Anda masuk dari perangkat baru.</p>
+                      <p className="text-sm text-slate-400 mt-1 max-w-md">{t('custom.settingsSecurity2faDesc')}</p>
                     </div>
                   </div>
                   <Toggle 
@@ -351,7 +380,7 @@ export default function SettingsView() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-slate-200">{t('settings.sections.sessions')}</h3>
-                      <p className="text-xs text-slate-400 mt-1">Perangkat yang saat ini login ke akun Anda.</p>
+                      <p className="text-xs text-slate-400 mt-1">{t('custom.settingsSecuritySessionsDesc')}</p>
                     </div>
                   </div>
                   
@@ -361,12 +390,12 @@ export default function SettingsView() {
                         <Smartphone size={18} className="text-green-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-200">Windows PC - Chrome (Sesi Saat Ini)</p>
+                        <p className="text-sm font-semibold text-slate-200">Windows PC - Chrome ({t('settings.currentSession') || 'Sesi Saat Ini'})</p>
                         <p className="text-xs text-slate-500 mt-0.5">Jakarta, ID • IP: 114.122.x.x</p>
                       </div>
                     </div>
                     <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold tracking-wider uppercase border border-green-500/20">
-                      Aktif
+                      {t('custom.settingsSecurityActive') || 'Aktif'}
                     </span>
                   </div>
                 </div>
@@ -404,9 +433,9 @@ export default function SettingsView() {
                         onChange={e => setProfile({...profile, currency: e.target.value})}
                         className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50 transition-all shadow-inner appearance-none cursor-pointer"
                       >
-                        <option value="IDR">IDR (Rp) - Rupiah Indonesia</option>
-                        <option value="USD">USD ($) - US Dollar</option>
-                        <option value="EUR">EUR (€) - Euro</option>
+                        <option value="IDR">{t('settings.currencyIdr')}</option>
+                        <option value="USD">{t('settings.currencyUsd')}</option>
+                        <option value="EUR">{t('settings.currencyEur')}</option>
                       </select>
                     </div>
                   </div>
@@ -425,15 +454,15 @@ export default function SettingsView() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-slate-200">{t('settings.sections.notifications')}</h3>
-                      <p className="text-xs text-slate-400 mt-1">Pilih notifikasi apa saja yang ingin Anda terima.</p>
+                      <p className="text-xs text-slate-400 mt-1">{t('custom.settingsNotifDesc')}</p>
                     </div>
                   </div>
                   
                   <div className="space-y-4 max-w-xl">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-surface-dark border border-border-dark">
                       <div>
-                        <p className="text-sm font-semibold text-slate-200">Notifikasi Email</p>
-                        <p className="text-xs text-slate-500 mt-1">Terima email peringatan sistem dan keamanan penting.</p>
+                        <p className="text-sm font-semibold text-slate-200">{t('custom.settingsNotifEmail')}</p>
+                        <p className="text-xs text-slate-500 mt-1">{t('custom.settingsNotifEmailDesc')}</p>
                       </div>
                       <Toggle 
                         label="" 
@@ -441,14 +470,14 @@ export default function SettingsView() {
                         onChange={async (c) => {
                           setProfile({...profile, notifEmail: c});
                           await updateProfile({...profile, notifEmail: c});
-                          showToast('success', 'Preferensi notifikasi disimpan');
+                          showToast('success', t('custom.settingsNotifSaved'));
                         }} 
                       />
                     </div>
                     <div className="flex items-center justify-between p-4 rounded-xl bg-surface-dark border border-border-dark">
                       <div>
-                        <p className="text-sm font-semibold text-slate-200">Notifikasi Push Transaksi</p>
-                        <p className="text-xs text-slate-500 mt-1">Peringatan real-time saat transaksi atau anggaran baru.</p>
+                        <p className="text-sm font-semibold text-slate-200">{t('custom.settingsNotifPush')}</p>
+                        <p className="text-xs text-slate-500 mt-1">{t('custom.settingsNotifPushDesc')}</p>
                       </div>
                       <Toggle 
                         label="" 
@@ -456,7 +485,7 @@ export default function SettingsView() {
                         onChange={async (c) => {
                           setProfile({...profile, notifPush: c});
                           await updateProfile({...profile, notifPush: c});
-                          showToast('success', 'Preferensi notifikasi disimpan');
+                          showToast('success', t('custom.settingsNotifSaved'));
                         }} 
                       />
                     </div>
@@ -480,14 +509,14 @@ export default function SettingsView() {
                   </div>
                   
                   <div className="relative z-10 max-w-2xl">
-                    <h3 className="font-bold text-xl text-red-400 mb-3">Zona Berbahaya</h3>
+                    <h3 className="font-bold text-xl text-red-400 mb-3">{t('custom.settingsTabsDanger')}</h3>
                     <p className="text-sm text-slate-300 leading-relaxed mb-6">
-                      Menghapus akun akan mengakibatkan hilangnya <span className="font-bold text-white">secara permanen</span> seluruh data transaksi, riwayat dompet, target keuangan, dan preferensi profil Anda. Data yang telah dihapus tidak dapat dipulihkan oleh administrator sekalipun.
+                      {t('custom.settingsDangerWarning1')} <span className="font-bold text-white">{t('custom.settingsDangerPermanently')}</span> {t('custom.settingsDangerWarning2')}
                     </p>
                     
                     <div className="flex items-center gap-4">
                       <button onClick={handleDeleteAccount} className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-red-500/20 flex items-center gap-2">
-                        <Trash2 size={18} /> Hapus Akun Secara Permanen
+                        <Trash2 size={18} /> {t('custom.settingsDangerDeleteBtn') || 'Hapus Akun Secara Permanen'}
                       </button>
                     </div>
                   </div>
@@ -495,11 +524,11 @@ export default function SettingsView() {
                 
                 <div className="glass-card rounded-[2rem] p-8 border border-border-dark flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-lg text-slate-200">Keluar dari Perangkat</h3>
-                    <p className="text-sm text-slate-400 mt-1">Hentikan sesi Anda saat ini untuk mengamankan akun.</p>
+                    <h3 className="font-semibold text-lg text-slate-200">{t('custom.settingsDangerLogoutTitle')}</h3>
+                    <p className="text-sm text-slate-400 mt-1">{t('custom.settingsDangerLogoutDesc')}</p>
                   </div>
                   <button onClick={logout} className="px-6 py-3 bg-surface-dark hover:bg-surface-hover border border-border-dark text-slate-300 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                    <LogOut size={18} /> Keluar Aplikasi
+                    <LogOut size={18} /> {t('custom.settingsDangerLogoutBtn') || 'Keluar Aplikasi'}
                   </button>
                 </div>
               </motion.div>

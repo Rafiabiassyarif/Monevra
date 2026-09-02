@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { useAuth } from '../../../context/AuthContext';
 import {
   Activity,
@@ -46,6 +47,7 @@ interface UserManagementProps {
 }
 
 export default function UserManagement({ onViewUser }: UserManagementProps) {
+  const { t } = useLanguage();
   const { user, isAdmin } = useAuth();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -186,19 +188,19 @@ export default function UserManagement({ onViewUser }: UserManagementProps) {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-        <MetricCard title="Pengguna" value={users.length} detail={`${totals.adminCount} admin`} icon={Users} />
-        <MetricCard title="Transaksi" value={totals.totalTx} detail="semua user" icon={Activity} />
-        <MetricCard title="Dompet" value={totals.totalWallets} detail={`${totals.totalBudgets} anggaran`} icon={Wallet} />
-        <MetricCard title="Saldo Tercatat" value={formatCurrency(totals.totalBalance, 'IDR')} detail="estimasi" icon={BarChart3} />
-        <MetricCard title="User Aktif" value={users.filter(u => (u.txCount || 0) > 0).length} detail="punya transaksi" icon={CheckCircle2} />
+        <MetricCard title={t('custom.usersTab')} value={users.length} detail={t('custom.umAdminCount').replace('{count}', String(totals.adminCount))} icon={Users} />
+        <MetricCard title={t('custom.txTab')} value={totals.totalTx} detail={t('custom.umAllUsers')} icon={Activity} />
+        <MetricCard title={t('custom.walletsTab')} value={totals.totalWallets} detail={t('custom.umBudgets').replace('{count}', String(totals.totalBudgets))} icon={Wallet} />
+        <MetricCard title={t('custom.recordedBalance')} value={formatCurrency(totals.totalBalance, 'IDR')} detail={t('custom.umEstimate')} icon={BarChart3} />
+        <MetricCard title={t('custom.activeUsers')} value={users.filter(u => (u.txCount || 0) > 0).length} detail={t('custom.umHasTx')} icon={CheckCircle2} />
       </div>
 
       {/* User Table */}
       <div className="glass-card rounded-[2rem] overflow-hidden">
         <div className="p-5 border-b border-white/5 flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
           <div>
-            <h3 className="font-semibold text-slate-200">Daftar Pengguna</h3>
-            <p className="text-xs text-slate-500">{filteredUsers.length} dari {users.length} pengguna ditampilkan</p>
+            <h3 className="font-semibold text-slate-200">{t('custom.umUserList')}</h3>
+            <p className="text-xs text-slate-500">{t('custom.umShown').replace('{shown}', String(filteredUsers.length)).replace('{total}', String(users.length))}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex bg-white/5 border border-white/10 rounded-xl p-0.5 text-xs">
@@ -208,7 +210,7 @@ export default function UserManagement({ onViewUser }: UserManagementProps) {
                   onClick={() => setFilterRole(role)}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${filterRole === role ? 'bg-cyan-500/25 text-cyan-300' : 'text-slate-400 hover:text-slate-200'}`}
                 >
-                  {role === 'all' ? 'Semua' : role === 'admin' ? 'Admin' : 'User'}
+                  {role === 'all' ? t('custom.umAll') : role === 'admin' ? t('custom.roleAdmin') : t('custom.roleUser')}
                 </button>
               ))}
             </div>
@@ -217,7 +219,7 @@ export default function UserManagement({ onViewUser }: UserManagementProps) {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Cari user..."
+                placeholder={t('custom.searchUser')}
                 className="w-full sm:w-56 bg-surface-dark border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50"
               />
             </div>
@@ -342,6 +344,7 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 function EditUserModal({ user: editUser, onClose, onSaved }: { user: UserRow; onClose: () => void; onSaved: (user: UserRow) => void }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     name: editUser.name || '',
     email: editUser.email || '',
@@ -381,19 +384,19 @@ function EditUserModal({ user: editUser, onClose, onSaved }: { user: UserRow; on
           <FormField label="Email">
             <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="admin-input" required />
           </FormField>
-          <FormField label="Role">
+          <FormField label={t('custom.umRoleLabel')}>
             <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="admin-input">
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="user">{t('custom.roleUser')}</option>
+              <option value="admin">{t('custom.roleAdmin')}</option>
             </select>
           </FormField>
-          <FormField label="Mata Uang">
+          <FormField label={t('custom.umCurrencyLabel')}>
             <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} className="admin-input">
-              <option value="IDR">IDR - Indonesian Rupiah</option>
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="SGD">SGD - Singapore Dollar</option>
-              <option value="JPY">JPY - Japanese Yen</option>
+              <option value="IDR">{t('custom.umCurrencyIdr')}</option>
+              <option value="USD">{t('custom.umCurrencyUsd')}</option>
+              <option value="EUR">{t('custom.umCurrencyEur')}</option>
+              <option value="SGD">{t('custom.umCurrencySgd')}</option>
+              <option value="JPY">{t('custom.umCurrencyJpy')}</option>
             </select>
           </FormField>
         </div>

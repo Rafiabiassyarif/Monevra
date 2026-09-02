@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { Bell, Send, Users, AlertCircle, CheckCircle2, Info, Sparkles } from 'lucide-react';
 import { apiRequest } from '../../../lib/api';
 
 export default function NotificationManager() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -135,8 +137,8 @@ export default function NotificationManager() {
                     className="w-full bg-surface-dark border border-border-dark rounded-xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer"
                     disabled={loading}
                   >
-                    <option value="all">Semua Pengguna (Broadcast)</option>
-                    <optgroup label="Pengguna Spesifik">
+                    <option value="all">{t('custom.broadcastAll')}</option>
+                    <optgroup label={t('custom.notifSpecificGroup')}>
                       {users.map(u => (
                         <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
                       ))}
@@ -146,7 +148,7 @@ export default function NotificationManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Tipe Notifikasi</label>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">{t('custom.notifTypeLabel')}</label>
                 <div className="grid grid-cols-4 gap-3">
                   {['info', 'success', 'warning', 'error'].map(type => (
                     <label key={type} className={`cursor-pointer flex flex-col items-center justify-center p-4 rounded-xl border ${form.type === type ? 'border-brand-500 bg-brand-500/10' : 'border-border-dark bg-surface-dark hover:bg-surface-hover'}`}>
@@ -162,10 +164,10 @@ export default function NotificationManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Judul Pesan</label>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">{t('custom.notifTitleLabel')}</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Pemeliharaan Server Sistem"
+                  placeholder={t('custom.notifPlaceholderTitle')}
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}
                   className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50"
@@ -174,9 +176,9 @@ export default function NotificationManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Isi Pesan</label>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">{t('custom.notifMsgLabel')}</label>
                 <textarea
-                  placeholder="Tuliskan pesan notifikasi di sini..."
+                  placeholder={t('custom.notifPlaceholderMsg')}
                   value={form.message}
                   onChange={e => setForm({ ...form, message: e.target.value })}
                   className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50 min-h-[120px] resize-y"
@@ -186,11 +188,11 @@ export default function NotificationManager() {
               <div className="pt-2">
                 <button type="submit" disabled={sending} className="w-full btn-premium flex items-center justify-center gap-2">
                   {sending ? (
-                    <span className="flex items-center gap-2">Mengirim...</span>
+                    <span className="flex items-center gap-2">{t('custom.notifSending')}</span>
                   ) : (
                     <>
                       <Send size={18} />
-                      Kirim Notifikasi
+                      {t('custom.notifSend')}
                     </>
                   )}
                 </button>
@@ -201,15 +203,15 @@ export default function NotificationManager() {
 
         <div>
           <div className="glass-card rounded-[2rem] p-6 border border-border-dark">
-            <h3 className="font-semibold text-slate-200 mb-4">Panduan Admin</h3>
+            <h3 className="font-semibold text-slate-200 mb-4">{t('custom.notifGuideTitle')}</h3>
             <div className="space-y-4 text-sm text-slate-400">
-              <p>Fitur <strong>Broadcast</strong> akan mengirimkan pesan yang sama ke setiap kotak masuk (*inbox*) dari seluruh pengguna yang terdaftar di dalam sistem.</p>
-              <p>Gunakan tipe notifikasi dengan bijak:</p>
+              <p dangerouslySetInnerHTML={{ __html: t('custom.notifGuideBroadcast') }} />
+              <p>{t('custom.notifGuideUseWisely')}</p>
               <ul className="space-y-3 mt-3">
-                <li className="flex gap-3"><Info size={16} className="text-blue-400 shrink-0 mt-0.5" /> <span><strong>Info</strong>: Pembaruan fitur, berita, promosi.</span></li>
-                <li className="flex gap-3"><CheckCircle2 size={16} className="text-green-400 shrink-0 mt-0.5" /> <span><strong>Success</strong>: Hadiah, verifikasi sukses.</span></li>
-                <li className="flex gap-3"><AlertCircle size={16} className="text-yellow-400 shrink-0 mt-0.5" /> <span><strong>Warning</strong>: Sisa kuota, aktivitas tidak wajar.</span></li>
-                <li className="flex gap-3"><AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" /> <span><strong>Error</strong>: Masalah pemblokiran, penundaan sistem.</span></li>
+                <li className="flex gap-3"><Info size={16} className="text-blue-400 shrink-0 mt-0.5" /> <span>{t('custom.notifGuideInfo')}</span></li>
+                <li className="flex gap-3"><CheckCircle2 size={16} className="text-green-400 shrink-0 mt-0.5" /> <span>{t('custom.notifGuideSuccess')}</span></li>
+                <li className="flex gap-3"><AlertCircle size={16} className="text-yellow-400 shrink-0 mt-0.5" /> <span>{t('custom.notifGuideWarning')}</span></li>
+                <li className="flex gap-3"><AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" /> <span>{t('custom.notifGuideError')}</span></li>
               </ul>
             </div>
           </div>

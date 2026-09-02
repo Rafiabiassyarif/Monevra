@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../../context/LanguageContext';
-import { 
-  CreditCard, Wallet, TrendingUp, PieChart, 
-  BarChart3, Receipt, Download, 
+import {
+  CreditCard, Wallet, TrendingUp, PieChart,
+  BarChart3, Receipt, Download,
   Smartphone, Moon, ListFilter, Globe, Sparkles
 } from 'lucide-react';
 
@@ -12,25 +12,25 @@ export default function FeaturesSection() {
   return (
     <section id="features" className="py-32 relative z-10">
       <div className="text-center mb-20">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/10 text-brand-400 text-sm font-semibold mb-6 border border-brand-500/20"
         >
-          <Sparkles className="w-4 h-4" /> Powerfully Simple
+          <Sparkles className="w-4 h-4" /> {t('features.tag')}
         </motion.div>
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
           className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight text-white"
         >
-          Everything you need,<br />
+          {t('features.title1')}<br />
           <span className="text-slate-500">{t('features.title2')}</span>
         </motion.h2>
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -41,9 +41,9 @@ export default function FeaturesSection() {
 
       {/* Bento Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-        
+
         {/* Large Feature 1 */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -60,16 +60,16 @@ export default function FeaturesSection() {
           </div>
           {/* Visual Mockup inside card */}
           <div className="mt-8 relative h-48 w-full rounded-2xl bg-white/5 border border-white/10 overflow-hidden group-hover:border-white/20 transition-colors">
-             <div className="absolute inset-0 bg-gradient-to-t from-brand-500/20 to-transparent opacity-50"></div>
-             <svg className="absolute bottom-0 w-full h-full drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 100">
-                <path d="M0,80 Q20,60 40,90 T80,50 T100,70 L100,100 L0,100 Z" fill="rgba(96, 165, 250, 0.1)" />
-                <path d="M0,80 Q20,60 40,90 T80,50 T100,70" fill="none" stroke="#60a5fa" strokeWidth="3" />
-             </svg>
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-500/20 to-transparent opacity-50"></div>
+            <svg className="absolute bottom-0 w-full h-full drop-shadow-xl" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <path d="M0,80 Q20,60 40,90 T80,50 T100,70 L100,100 L0,100 Z" fill="rgba(96, 165, 250, 0.1)" />
+              <path d="M0,80 Q20,60 40,90 T80,50 T100,70" fill="none" stroke="#60a5fa" strokeWidth="3" />
+            </svg>
           </div>
         </motion.div>
 
         {/* Medium Feature 1 */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -89,7 +89,7 @@ export default function FeaturesSection() {
         </motion.div>
 
         {/* Small Feature 1 */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -104,7 +104,7 @@ export default function FeaturesSection() {
         </motion.div>
 
         {/* Small Feature 2 */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

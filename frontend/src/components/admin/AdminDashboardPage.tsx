@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { AnimatePresence, motion } from 'motion/react';
@@ -13,6 +14,7 @@ import UserDetail from './views/UserDetail';
 import NotificationManager from './views/NotificationManager';
 
 export default function AdminDashboardPage() {
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Analitik Sistem');
   const [selectedUser, setSelectedUser] = useState<any>(null);

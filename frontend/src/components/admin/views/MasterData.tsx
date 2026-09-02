@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { Database, Plus, Pencil, Trash, X, Save, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -18,6 +19,7 @@ interface Currency {
 }
 
 export default function MasterData() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'categories' | 'currencies'>('categories');
   const [toast, setToast] = useState('');
 
@@ -76,6 +78,7 @@ const DEFAULT_CATEGORIES: Category[] = [
 ];
 
 function CategoriesManager({ showToast }: { showToast: (m: string) => void }) {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
   const [editingCat, setEditingCat] = useState<Category | null>(null);
@@ -119,7 +122,7 @@ function CategoriesManager({ showToast }: { showToast: (m: string) => void }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari kategori..."
+            placeholder={t('custom.searchCategory')}
             className="w-full bg-surface-dark border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 focus:border-cyan-500/50 outline-none"
           />
         </div>
@@ -203,6 +206,7 @@ function CategoriesManager({ showToast }: { showToast: (m: string) => void }) {
 }
 
 function CategoryModal({ cat, onClose, onSave }: { cat: Category | null, onClose: () => void, onSave: (c: Category) => void }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState<Omit<Category, 'id'>>({
     name: cat?.name || '',
     type: cat?.type || 'expense',
@@ -235,14 +239,14 @@ function CategoryModal({ cat, onClose, onSave }: { cat: Category | null, onClose
         </div>
         <div className="space-y-4">
           <label className="block">
-            <span className="block text-xs font-medium text-slate-400 mb-1">Nama Kategori</span>
-            <input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors" placeholder="Mis. Belanja Bulanan" />
+            <span className="block text-xs font-medium text-slate-400 mb-1">{t('custom.catNameLabel')}</span>
+            <input required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors" placeholder={t('custom.catNameHint')} />
           </label>
           <label className="block">
-            <span className="block text-xs font-medium text-slate-400 mb-1">Tipe</span>
+            <span className="block text-xs font-medium text-slate-400 mb-1">{t('custom.txFormType')}</span>
             <select value={form.type} onChange={e => setForm({...form, type: e.target.value as any})} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors appearance-none">
-              <option value="expense">Pengeluaran</option>
-              <option value="income">Pemasukan</option>
+              <option value="expense">{t('custom.typeExpense')}</option>
+              <option value="income">{t('custom.typeIncome')}</option>
             </select>
           </label>
           <label className="block">
@@ -274,6 +278,7 @@ const DEFAULT_CURRENCIES: Currency[] = [
 ];
 
 function CurrenciesManager({ showToast }: { showToast: (m: string) => void }) {
+  const { t } = useLanguage();
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [search, setSearch] = useState('');
   const [editingCur, setEditingCur] = useState<Currency | null>(null);
@@ -317,7 +322,7 @@ function CurrenciesManager({ showToast }: { showToast: (m: string) => void }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari mata uang..."
+            placeholder={t('custom.searchCurrency')}
             className="w-full bg-surface-dark border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 focus:border-cyan-500/50 outline-none"
           />
         </div>

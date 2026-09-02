@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { Settings, Save, Bell, Mail, Database, RefreshCw, Download, ShieldCheck, HardDrive } from 'lucide-react';
 import { apiRequest } from '../../../lib/api';
 
 export default function SystemSettings() {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,7 +59,7 @@ export default function SystemSettings() {
     return (
       <div className="h-full flex flex-col items-center justify-center text-slate-500">
         <RefreshCw className="w-8 h-8 animate-spin mb-4 text-cyan-500" />
-        <p>Memuat pengaturan sistem...</p>
+        <p>{t('custom.settingsLoading')}</p>
       </div>
     );
   }
@@ -78,48 +80,48 @@ export default function SystemSettings() {
             <Settings className="w-5 h-5 text-cyan-400" />
           </div>
           <div>
-            <h2 className="text-2xl font-display font-bold text-slate-200">Pengaturan Sistem</h2>
-            <p className="text-slate-400 text-sm">Konfigurasi global platform Monevra.</p>
+            <h2 className="text-2xl font-display font-bold text-slate-200">{t('custom.sysSettingsTitle')}</h2>
+            <p className="text-slate-400 text-sm">{t('custom.sysSettingsSubtitle')}</p>
           </div>
         </div>
         <button onClick={handleSave} disabled={saving} className="hidden md:flex btn-admin-premium disabled:opacity-50">
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+          {saving ? t('custom.saving') : t('custom.saveSettings')}
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column */}
         <div className="space-y-6">
-          <SettingSection title="Notifikasi Global" icon={Bell} description="Atur notifikasi default untuk semua pengguna.">
+          <SettingSection title={t('custom.globalNotification')} icon={Bell} description={t('custom.globalNotifDesc')}>
             <div className="space-y-4">
               <Toggle 
-                label="Notifikasi Transaksi Baru" 
+                label={t('custom.notifNewTx')} 
                 checked={settings['notify_new_transaction'] === 'true'} 
                 onChange={(c) => updateSetting('notify_new_transaction', String(c))}
               />
               <Toggle 
-                label="Peringatan Limit Anggaran" 
+                label={t('custom.notifBudgetAlert')} 
                 checked={settings['notify_budget_alert'] === 'true'} 
                 onChange={(c) => updateSetting('notify_budget_alert', String(c))}
               />
               <Toggle 
-                label="Email Laporan Mingguan" 
+                label={t('custom.notifWeeklyReport')} 
                 checked={settings['email_weekly_report'] === 'true'} 
                 onChange={(c) => updateSetting('email_weekly_report', String(c))}
               />
             </div>
           </SettingSection>
 
-          <SettingSection title="Pemeliharaan Database" icon={Database} description="Tindakan administratif untuk pengelolaan data.">
+          <SettingSection title={t('custom.dbMaintenance')} icon={Database} description={t('custom.dbMaintenanceDesc')}>
             <div className="space-y-4 pt-2">
               <button 
                 onClick={handleBackup}
                 className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-xl text-sm font-medium text-slate-200 transition-colors flex items-center justify-center gap-2"
               >
-                <Download className="w-4 h-4" /> Backup Database Manual
+                <Download className="w-4 h-4" /> {t('custom.backupManual')}
               </button>
-              <p className="text-xs text-slate-500">Unduh salinan lengkap struktur dan data MySQL secara real-time (.sql).</p>
+              <p className="text-xs text-slate-500">{t('custom.backupDesc')}</p>
             </div>
           </SettingSection>
         </div>
@@ -130,7 +132,7 @@ export default function SystemSettings() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">SMTP Host</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">{t('custom.smtpHost')}</label>
                   <input 
                     type="text" 
                     placeholder="smtp.gmail.com"
@@ -140,7 +142,7 @@ export default function SystemSettings() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">SMTP Port</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">{t('custom.smtpPort')}</label>
                   <input 
                     type="number" 
                     placeholder="465"
@@ -152,7 +154,7 @@ export default function SystemSettings() {
               </div>
               
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">SMTP Username</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">{t('custom.smtpUsername')}</label>
                 <input 
                   type="text" 
                   placeholder="email@domain.com"
@@ -163,7 +165,7 @@ export default function SystemSettings() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">SMTP Password</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">{t('custom.smtpPassword')}</label>
                 <input 
                   type="password" 
                   placeholder="••••••••••••"
@@ -174,7 +176,7 @@ export default function SystemSettings() {
               </div>
 
               <div className="pt-2">
-                <label className="block text-xs font-medium text-slate-400 mb-1">Sender Email</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">{t('custom.senderEmail')}</label>
                 <input 
                   type="text" 
                   placeholder="noreply@monevra.com"
@@ -192,7 +194,7 @@ export default function SystemSettings() {
       <div className="md:hidden mt-4 flex justify-end pt-4 border-t border-white/10">
         <button onClick={handleSave} disabled={saving} className="btn-admin-premium w-full disabled:opacity-50">
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+          {saving ? t('custom.saving') : t('custom.saveSettings')}
         </button>
       </div>
     </div>

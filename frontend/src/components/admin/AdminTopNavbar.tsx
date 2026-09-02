@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 import { Menu, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,6 +9,7 @@ interface AdminTopNavbarProps {
 }
 
 export default function AdminTopNavbar({ onMenuClick, activeTab }: AdminTopNavbarProps) {
+  const { t } = useLanguage();
   const { user } = useAuth();
 
   return (

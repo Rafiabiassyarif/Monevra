@@ -15,12 +15,12 @@ interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
   isAdmin: boolean;
-  loginWithEmail: (email: string, pass: string) => Promise<void>;
-  registerWithEmail: (email: string, pass: string, name: string) => Promise<{ success: boolean; message: string }>;
+  loginWithEmail: (email: string, pass: string, captchaToken: string) => Promise<void>;
+  registerWithEmail: (email: string, pass: string, name: string, captchaToken: string) => Promise<{ success: boolean; message: string }>;
   loginWithGoogle: (code: string) => Promise<void>;
   loginWithGithub: (code: string) => Promise<void>;
   logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ message: string }>;
+  resetPassword: (email: string, captchaToken: string) => Promise<{ message: string }>;
   verifyResetCode: (email: string, code: string) => Promise<void>;
   confirmPasswordReset: (email: string, newPassword: string, code: string) => Promise<void>;
 }
@@ -42,7 +42,14 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUser | null>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   // On mount: validate existing token via /api/auth/me
@@ -52,16 +59,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       apiRequest<{ user: AppUser }>('/auth/me')
         .then((data) => {
           setUser(data.user);
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data.user));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.user));
         })
-        .catch(() => {
-          clearAuthToken();
-          sessionStorage.removeItem(STORAGE_KEY);
+        .catch((err) => {
+          console.error("Auth validation failed:", err);
+          // Do not clear tokens on generic network error, api.ts handles 401s
         })
         .finally(() => setLoading(false));
     } else {
       // No token — clear any stale user data
-      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
       setLoading(false);
     }
   }, []);
@@ -69,22 +76,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const persistUser = (nextUser: AppUser, token: string) => {
     setAuthToken(token);
     setUser(nextUser);
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
   };
 
-  const loginWithEmail = async (email: string, pass: string) => {
+  const loginWithEmail = async (email: string, pass: string, captchaToken: string) => {
     const data = await apiRequest<{ token: string; user: AppUser }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password: pass }),
+      body: JSON.stringify({ email, password: pass, captchaToken }),
     });
     persistUser(data.user, data.token);
   };
 
   // Register does NOT auto-login — returns success message only
-  const registerWithEmail = async (email: string, pass: string, name: string) => {
+  const registerWithEmail = async (email: string, pass: string, name: string, captchaToken: string) => {
     const data = await apiRequest<{ success: boolean; message: string }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password: pass }),
+      body: JSON.stringify({ name, email, password: pass, captchaToken }),
     });
     return data;
   };
@@ -107,14 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     clearAuthToken();
-    sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
     setUser(null);
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string, captchaToken: string) => {
     return await apiRequest<{ message: string }>('/auth/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, captchaToken }),
     });
   };
 

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from "../../context/LanguageContext";
 import { motion } from 'motion/react';
 
 export default function CustomCursor() {
+  const { t } = useLanguage();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
 

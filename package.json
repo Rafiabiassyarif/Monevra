@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "install": "npm install --prefix backend",
-    "start": "node backend/server.js",
+    "start": "node scripts/start.mjs",
     "dev": "node scripts/dev.mjs"
   }
 }

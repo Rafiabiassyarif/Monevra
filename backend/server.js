@@ -3,17 +3,20 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import nodemailer from 'nodemailer';
 import { spawn } from 'child_process';
+import { randomBytes, randomInt } from 'crypto';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
-import { hashPassword, comparePassword, signToken, authenticateToken, requireAdmin } from './auth.js';
+import multer from 'multer';
 
-dotenv.config();
+import { hashPassword, comparePassword, signToken, authenticateToken, requireAdmin } from './auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const port = Number(process.env.PORT || process.env.SERVER_PORT || 3001);
 
@@ -39,14 +42,19 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(helmet({ contentSecurityPolicy: false }));
 const allowedOrigins = process.env.APP_URL ? process.env.APP_URL.split(',') : ['http://localhost:3000'];
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true, allowedHeaders: ['Content-Type', 'Authorization'] }));
 
 const globalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { message: 'Terlalu banyak permintaan.' } });
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { message: 'Terlalu banyak percobaan, coba lagi dalam 15 menit.' } });
 app.use('/api', globalLimiter);
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  next();
+});
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
@@ -70,6 +78,14 @@ app.use('/api/admin', (req, res, next) => {
 
 // Wrap async route handlers to catch errors automatically
 const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, char => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  "'": '&#39;',
+  '"': '&quot;',
+}[char]));
 
 const toDateString = value => {
   if (!value) return '';
@@ -159,6 +175,7 @@ async function getFinance(userId) {
       twoFactorEnabled: Boolean(userRows[0].two_factor_enabled),
       notifEmail: Boolean(userRows[0].notif_email ?? 1),
       notifPush: Boolean(userRows[0].notif_push ?? 0),
+      gemini_api_key: userRows[0].gemini_api_key || '',
     },
     transactions: txRows.map(mapTransaction),
     wallets: walletRows.map(mapWallet),
@@ -177,7 +194,7 @@ app.post('/api/contact', asyncHandler(async (req, res) => {
   const [settingsRows] = await pool.execute('SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ("smtp_host", "smtp_port", "smtp_user", "smtp_pass", "sender_email")');
   const settings = {};
   settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
-  
+
   const smtpHost = settings.smtp_host || 'smtp.gmail.com';
   const smtpPort = settings.smtp_port ? Number(settings.smtp_port) : 465;
   const smtpUser = settings.smtp_user || process.env.SMTP_USER;
@@ -189,30 +206,27 @@ app.post('/api/contact', asyncHandler(async (req, res) => {
     return res.json({ ok: true, message: 'Pesan berhasil dicatat (SMTP belum dikonfigurasi).' });
   }
 
-  const dynamicTransporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
-    auth: {
-      user: smtpUser,
-      pass: smtpPass,
-    },
-  });
+  const isGmail = smtpUser && smtpUser.endsWith('@gmail.com');
+  const transportConfig = isGmail 
+    ? { service: 'gmail', auth: { user: smtpUser, pass: smtpPass } }
+    : { host: smtpHost, port: smtpPort, secure: smtpPort === 465, auth: { user: smtpUser, pass: smtpPass } };
+
+  const dynamicTransporter = nodemailer.createTransport(transportConfig);
 
   try {
     await dynamicTransporter.sendMail({
       from: `"${name}" <${senderEmail}>`,
       replyTo: email,
-      to: 'rafiabiassyarif@gmail.com',
+      to: 'appsmonevra@gmail.com',
       subject: 'Pesan Baru dari Landing Page Monevra',
       text: `Nama: ${name}\nEmail: ${email}\n\nPesan:\n${message}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; color: #0f172a;">
           <h2>Pesan Baru dari Landing Page Monevra</h2>
-          <p><strong>Nama:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Nama:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
           <p><strong>Pesan:</strong></p>
-          <p style="white-space: pre-wrap; background: #e2e8f0; padding: 15px; border-radius: 8px;">${message}</p>
+          <p style="white-space: pre-wrap; background: #e2e8f0; padding: 15px; border-radius: 8px;">${escapeHtml(message)}</p>
         </div>
       `
     });
@@ -232,7 +246,26 @@ app.get('/api/health', asyncHandler(async (_req, res) => {
 }));
 
 // --- Auth ---
-app.post('/api/auth/login', asyncHandler(async (req, res) => {
+const verifyCaptcha = async (req, res, next) => {
+  const token = req.body.captchaToken;
+  if (!token) return res.status(400).json({ message: 'Verifikasi Puzzle gagal. Harap geser puzzle.' });
+
+  // Custom Slider Puzzle Validation
+  if (!token.startsWith('monevra_custom_verified_token_')) {
+    return res.status(400).json({ message: 'Verifikasi Puzzle tidak valid atau kadaluarsa.' });
+  }
+
+  // Opsional: Validasi waktu token (misalnya kadaluarsa dalam 5 menit)
+  const timestamp = parseInt(token.split('_').pop() || '0');
+  const now = Date.now();
+  if (now - timestamp > 5 * 60 * 1000) {
+    return res.status(400).json({ message: 'Verifikasi Puzzle kadaluarsa. Silakan geser ulang.' });
+  }
+
+  next();
+};
+
+app.post('/api/auth/login', verifyCaptcha, asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: 'Email dan password wajib diisi.' });
   const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
@@ -244,8 +277,8 @@ app.post('/api/auth/login', asyncHandler(async (req, res) => {
   res.json({ token, user: mapUser(row) });
 }));
 
-app.post('/api/auth/register', asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+app.post('/api/auth/register', verifyCaptcha, asyncHandler(async (req, res) => {
+  const { email, password, name } = req.body;
   if (!name || !email || !password) return res.status(400).json({ message: 'Nama, email, dan password wajib diisi.' });
   if (password.length < 6) return res.status(400).json({ message: 'Password minimal 6 karakter.' });
   try {
@@ -261,13 +294,9 @@ app.post('/api/auth/register', asyncHandler(async (req, res) => {
   }
 }));
 
-app.get('/api/auth/me', asyncHandler(async (req, res) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'No token.' });
+app.get('/api/auth/me', authenticateToken, asyncHandler(async (req, res) => {
   try {
-    const { default: jwt } = await import('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret_change_in_production');
-    const user = await getUserById(decoded.userId);
+    const user = await getUserById(req.user.userId);
     if (!user) return res.status(401).json({ message: 'User not found.' });
     res.json({ user });
   } catch {
@@ -281,7 +310,8 @@ app.post('/api/auth/google', asyncHandler(async (req, res) => {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = `${process.env.APP_URL || 'http://localhost:3000'}/auth/callback/google`;
+  const origin = req.headers.origin || (process.env.APP_URL ? process.env.APP_URL.split(',')[0] : 'http://localhost:3000');
+  const redirectUri = `${origin}/auth/callback/google`;
 
   // 1. Exchange code for tokens
   const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -306,7 +336,7 @@ app.post('/api/auth/google', asyncHandler(async (req, res) => {
   const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
   });
-  
+
   const userData = await userResponse.json();
   if (!userResponse.ok) {
     return res.status(400).json({ message: 'Failed to fetch user info from Google.', details: userData });
@@ -323,7 +353,7 @@ app.post('/api/auth/google', asyncHandler(async (req, res) => {
     try {
       // Register the user
       // Generate a random secure password for oauth users since they don't use it
-      const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+      const randomPassword = randomBytes(24).toString('base64url');
       const hashedPw = await hashPassword(randomPassword);
       const [result] = await pool.execute(
         'INSERT INTO users (name, email, password, role, currency) VALUES (?, ?, ?, ?, ?)',
@@ -356,10 +386,13 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
     return res.status(500).json({ message: 'GitHub OAuth is not configured on the server.' });
   }
 
+  const origin = req.headers.origin || (process.env.APP_URL ? process.env.APP_URL.split(',')[0] : 'http://localhost:3000');
+  const redirectUri = `${origin}/auth/callback/github`;
+
   // 1. Exchange code for access token
   const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
@@ -367,6 +400,7 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
       client_id: clientId,
       client_secret: clientSecret,
       code,
+      redirect_uri: redirectUri,
     }),
   });
 
@@ -378,12 +412,12 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
 
   // 2. Fetch user profile
   const userResponse = await fetch('https://api.github.com/user', {
-    headers: { 
+    headers: {
       Authorization: `Bearer ${tokenData.access_token}`,
       Accept: 'application/json'
     },
   });
-  
+
   const userData = await userResponse.json();
   if (!userResponse.ok) {
     return res.status(400).json({ message: 'Failed to fetch user info from GitHub.', details: userData });
@@ -395,7 +429,7 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
   // 3. GitHub users might have their email private, fetch emails explicitly
   if (!email) {
     const emailResponse = await fetch('https://api.github.com/user/emails', {
-      headers: { 
+      headers: {
         Authorization: `Bearer ${tokenData.access_token}`,
         Accept: 'application/json'
       },
@@ -413,7 +447,7 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
 
   if (!row) {
     try {
-      const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+      const randomPassword = randomBytes(24).toString('base64url');
       const hashedPw = await hashPassword(randomPassword);
       const [result] = await pool.execute(
         'INSERT INTO users (name, email, password, role, currency) VALUES (?, ?, ?, ?, ?)',
@@ -435,22 +469,22 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
   res.json({ token, user: mapped });
 }));
 
-app.post('/api/auth/reset-password', asyncHandler(async (req, res) => {
+app.post('/api/auth/reset-password', verifyCaptcha, asyncHandler(async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email wajib diisi.' });
   const [rows] = await pool.execute('SELECT id FROM users WHERE email = ?', [email]);
   if (!rows[0]) return res.status(404).json({ message: 'Tidak ada akun dengan email ini.' });
-  
+
   // Generate 6-digit OTP
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = randomInt(100000, 1000000).toString();
   resetCodes.set(email, { code, expires: Date.now() + 5 * 60 * 1000 }); // Valid for 5 mins
-  
+
   try {
     // Fetch SMTP settings from DB
     const [settingsRows] = await pool.execute('SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ("smtp_host", "smtp_port", "smtp_user", "smtp_pass", "sender_email")');
     const settings = {};
     settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
-    
+
     const smtpHost = settings.smtp_host || 'smtp.gmail.com';
     const smtpPort = settings.smtp_port ? Number(settings.smtp_port) : 465;
     const smtpUser = settings.smtp_user || process.env.SMTP_USER;
@@ -488,6 +522,7 @@ app.post('/api/auth/reset-password', asyncHandler(async (req, res) => {
             <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Monevra. All rights reserved.</p>
           </div>
         `,
+        text: `Halo,\n\nKami menerima permintaan untuk mereset kata sandi akun Monevra Anda.\n\nBerikut adalah kode verifikasi OTP Anda (berlaku selama 5 menit):\n${code}\n\nJika Anda tidak pernah meminta reset password, abaikan email ini dan akun Anda akan tetap aman.\n\n© 2026 Monevra. All rights reserved.`,
       });
     }
 
@@ -501,7 +536,7 @@ app.post('/api/auth/reset-password', asyncHandler(async (req, res) => {
 app.post('/api/auth/verify-reset-code', asyncHandler(async (req, res) => {
   const { email, code } = req.body;
   const record = resetCodes.get(email);
-  
+
   if (!record) return res.status(400).json({ message: 'Tidak ada permintaan reset aktif.' });
   if (Date.now() > record.expires) {
     resetCodes.delete(email);
@@ -510,29 +545,29 @@ app.post('/api/auth/verify-reset-code', asyncHandler(async (req, res) => {
   if (record.code !== code) {
     return res.status(400).json({ message: 'Kode OTP salah.' });
   }
-  
+
   res.json({ ok: true });
 }));
 
 app.post('/api/auth/reset-password-confirm', asyncHandler(async (req, res) => {
   const { email, newPassword, code } = req.body;
   if (!email || !newPassword || !code) return res.status(400).json({ message: 'Email, password baru, dan kode wajib diisi.' });
-  
+
   // Final verification before DB update (security check)
   const record = resetCodes.get(email);
   if (!record || record.code !== code || Date.now() > record.expires) {
     return res.status(400).json({ message: 'Sesi reset password tidak valid atau kedaluwarsa.' });
   }
-  
+
   if (newPassword.length < 6) return res.status(400).json({ message: 'Password minimal 6 karakter.' });
-  
+
   const hashed = await hashPassword(newPassword);
   const [result] = await pool.execute('UPDATE users SET password = ? WHERE email = ?', [hashed, email]);
   if (result.affectedRows === 0) return res.status(404).json({ message: 'User tidak ditemukan.' });
-  
+
   // Clear the used OTP
   resetCodes.delete(email);
-  
+
   res.json({ ok: true, message: 'Password berhasil direset.' });
 }));
 
@@ -544,11 +579,11 @@ app.get('/api/users/:userId/finance', asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/users/:userId/profile', asyncHandler(async (req, res) => {
-  const { name, email, currency, language, phone, avatar, twoFactorEnabled, notifEmail, notifPush } = req.body;
+  const { name, email, currency, language, phone, avatar, twoFactorEnabled, notifEmail, notifPush, gemini_api_key } = req.body;
   if (!name || !email) return res.status(400).json({ message: 'Nama dan email wajib diisi.' });
-  await pool.execute(
-    'UPDATE users SET name = ?, email = ?, currency = ?, language = ?, phone = ?, avatar = ?, two_factor_enabled = ?, notif_email = ?, notif_push = ? WHERE id = ?', 
-    [name, email, currency || 'IDR', language || 'id', phone || null, avatar || null, twoFactorEnabled ? 1 : 0, notifEmail ?? 1, notifPush ?? 0, req.params.userId]
+  await pool.query(
+    'UPDATE users SET name = ?, email = ?, currency = ?, language = ?, phone = ?, avatar = ?, two_factor_enabled = ?, notif_email = ?, notif_push = ?, gemini_api_key = ? WHERE id = ?',
+    [name, email, currency || 'IDR', language || 'id', phone || null, avatar || null, twoFactorEnabled ? 1 : 0, notifEmail ?? 1, notifPush ?? 0, gemini_api_key || null, req.params.userId]
   );
   res.json({ ok: true });
 }));
@@ -556,10 +591,10 @@ app.put('/api/users/:userId/profile', asyncHandler(async (req, res) => {
 app.delete('/api/users/:userId', asyncHandler(async (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ message: 'Konfirmasi kata sandi diperlukan untuk menghapus akun.' });
-  
+
   const [rows] = await pool.execute('SELECT password FROM users WHERE id = ?', [req.params.userId]);
   if (!rows[0]) return res.status(404).json({ message: 'User tidak ditemukan.' });
-  
+
   const valid = await comparePassword(password, rows[0].password);
   if (!valid) return res.status(401).json({ message: 'Sandi salah.' });
 
@@ -570,14 +605,14 @@ app.delete('/api/users/:userId', asyncHandler(async (req, res) => {
 app.put('/api/users/:userId/password', asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   if (!oldPassword || !newPassword) return res.status(400).json({ message: 'Sandi lama dan baru wajib diisi.' });
-  
+
   const [rows] = await pool.execute('SELECT password FROM users WHERE id = ?', [req.params.userId]);
   if (!rows[0]) return res.status(404).json({ message: 'User tidak ditemukan.' });
   const valid = await comparePassword(oldPassword, rows[0].password);
   if (!valid) {
     return res.status(401).json({ message: 'Sandi lama salah.' });
   }
-  
+
   const hashed = await hashPassword(newPassword);
   await pool.execute('UPDATE users SET password = ? WHERE id = ?', [hashed, req.params.userId]);
   res.json({ ok: true });
@@ -586,7 +621,7 @@ app.put('/api/users/:userId/password', asyncHandler(async (req, res) => {
 // --- Transactions ---
 app.post('/api/users/:userId/transactions', asyncHandler(async (req, res) => {
   const tx = req.body;
-  if (!tx.title || !tx.amount || !tx.wallet || !tx.date || !tx.type) {
+  if (!tx.title || tx.amount === undefined || tx.amount === null || !tx.wallet || !tx.date || !tx.type) {
     return res.status(400).json({ message: 'Data transaksi tidak lengkap.' });
   }
   const [walletRows] = await pool.execute('SELECT id FROM wallets WHERE user_id = ? AND name = ? LIMIT 1', [req.params.userId, tx.wallet]);
@@ -595,24 +630,182 @@ app.post('/api/users/:userId/transactions', asyncHandler(async (req, res) => {
     'INSERT INTO transactions (user_id, wallet_id, title, category, amount, wallet_name, transaction_date, status, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [req.params.userId, walletId, tx.title, tx.category || 'Other', tx.amount, tx.wallet, tx.date, tx.status || 'Completed', tx.type],
   );
+  // Update wallet balance immediately
+  const status = tx.status || 'Completed';
+  if (walletId && status === 'Completed') {
+    const delta = tx.type === 'income' ? Number(tx.amount) : -Number(tx.amount);
+    await pool.execute('UPDATE wallets SET balance = balance + ? WHERE id = ? AND user_id = ?', [delta, walletId, req.params.userId]);
+  }
   res.status(201).json({ id: String(result.insertId) });
 }));
 
 app.put('/api/users/:userId/transactions/:id', asyncHandler(async (req, res) => {
   const tx = req.body;
+  // Fetch old transaction to revert its balance effect
+  const [oldRows] = await pool.execute('SELECT * FROM transactions WHERE id = ? AND user_id = ?', [req.params.id, req.params.userId]);
+  const oldTx = oldRows[0];
   const [walletRows] = await pool.execute('SELECT id FROM wallets WHERE user_id = ? AND name = ? LIMIT 1', [req.params.userId, tx.wallet]);
   const walletId = walletRows[0]?.id || null;
   await pool.execute(
     'UPDATE transactions SET wallet_id = ?, title = ?, category = ?, amount = ?, wallet_name = ?, transaction_date = ?, status = ?, type = ? WHERE id = ? AND user_id = ?',
     [walletId, tx.title, tx.category || 'Other', tx.amount, tx.wallet, tx.date, tx.status || 'Completed', tx.type, req.params.id, req.params.userId],
   );
+  // Revert old balance
+  if (oldTx && oldTx.wallet_id && oldTx.status === 'Completed') {
+    const oldDelta = oldTx.type === 'income' ? Number(oldTx.amount) : -Number(oldTx.amount);
+    await pool.execute('UPDATE wallets SET balance = balance - ? WHERE id = ? AND user_id = ?', [oldDelta, oldTx.wallet_id, req.params.userId]);
+  }
+  // Apply new balance
+  const newStatus = tx.status || 'Completed';
+  if (walletId && newStatus === 'Completed') {
+    const newDelta = tx.type === 'income' ? Number(tx.amount) : -Number(tx.amount);
+    await pool.execute('UPDATE wallets SET balance = balance + ? WHERE id = ? AND user_id = ?', [newDelta, walletId, req.params.userId]);
+  }
   res.json({ ok: true });
 }));
 
+app.delete('/api/users/:userId/transactions', asyncHandler(async (req, res) => {
+  const [txs] = await pool.execute('SELECT * FROM transactions WHERE user_id = ?', [req.params.userId]);
+  for (const tx of txs) {
+    if (tx.status === 'Completed' && tx.wallet_name) {
+      const delta = tx.type === 'income' ? tx.amount : -Number(tx.amount);
+      await pool.execute('UPDATE wallets SET balance = balance - ? WHERE user_id = ? AND name = ?', [delta, req.params.userId, tx.wallet_name]);
+    }
+  }
+  await pool.execute('DELETE FROM transactions WHERE user_id = ?', [req.params.userId]);
+  res.json({ ok: true, message: 'Semua transaksi berhasil dihapus.' });
+}));
+
 app.delete('/api/users/:userId/transactions/:id', asyncHandler(async (req, res) => {
+  const [rows] = await pool.execute('SELECT * FROM transactions WHERE id = ? AND user_id = ?', [req.params.id, req.params.userId]);
+  const tx = rows[0];
+  if (tx && tx.wallet_id && tx.status === 'Completed') {
+    const delta = tx.type === 'income' ? Number(tx.amount) : -Number(tx.amount);
+    await pool.execute('UPDATE wallets SET balance = balance - ? WHERE id = ? AND user_id = ?', [delta, tx.wallet_id, req.params.userId]);
+  }
   await pool.execute('DELETE FROM transactions WHERE id = ? AND user_id = ?', [req.params.id, req.params.userId]);
   res.json({ ok: true });
 }));
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
+
+app.post('/api/users/:userId/scan-receipt', upload.single('receipt'), asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'Tidak ada file gambar yang diunggah.' });
+  }
+
+  try {
+    const [userRows] = await pool.execute('SELECT gemini_api_key FROM users WHERE id = ?', [req.params.userId]);
+    const userApiKey = userRows[0]?.gemini_api_key;
+    const globalApiKey = process.env.GEMINI_API_KEY;
+
+    if (!globalApiKey && !userApiKey) {
+      return res.status(500).json({ message: 'API Key Gemini belum dikonfigurasi.' });
+    }
+
+    const prompt = `
+Anda adalah AI OCR Akuntansi tingkat lanjut. Tugas Anda adalah mengekstrak data dari struk belanja ini ke dalam format JSON yang valid.
+Pastikan:
+1. "title" merepresentasikan nama toko (jika tidak ada gunakan "Unknown Merchant").
+2. "items" berisi daftar barang yang dibeli dengan "title", "quantity" (angka bulat), "amount" (angka bulat harga total barang), dan "category".
+3. PENTING: Jika terdapat potongan harga, diskon, atau promo di struk, masukkan sebagai item tersendiri di dalam "items" dengan "title" (misal: "Diskon/Promo"), "quantity" 1, dan "amount" bernilai NEGATIF. JANGAN mengurangi harga asli barang dengan diskon tersebut!
+4. JANGAN memasukkan barang yang harganya menjadi 0 (gratis) ke dalam "items". Abaikan saja barang tersebut.
+5. Kategori yang didukung HANYA: Food, Shopping, Transport, Education, Health, Utilities, Entertainment, Other. Pilihlah dengan cerdas.
+6. Jangan halusinasi. Ekstrak HANYA teks yang relevan.
+7. "amount" pada root JSON adalah grand total struk (termasuk semua diskon & pajak).
+8. "date" diformat YYYY-MM-DD.
+
+Berikan respons HANYA berupa JSON murni tanpa markdown \`\`\`json.
+Schema JSON:
+{
+  "title": "string",
+  "date": "string",
+  "amount": number,
+  "category": "string",
+  "items": [
+    {
+      "title": "string",
+      "quantity": number,
+      "amount": number,
+      "category": "string"
+    }
+  ],
+  "type": "expense"
+}`;
+
+    const runGemini = async (apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: req.file.buffer.toString('base64'),
+            mimeType: req.file.mimetype
+          }
+        }
+      ]);
+      return result.response.text();
+    };
+
+    let responseText = '';
+    try {
+      if (!globalApiKey) throw new Error('Global API Key missing');
+      responseText = await runGemini(globalApiKey);
+    } catch (globalErr) {
+      const msg = globalErr.message || '';
+      const isQuotaOrAuthError = msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests') || msg.includes('API_KEY_INVALID') || msg.includes('API key not valid') || msg.includes('Global API Key missing');
+      
+      if (isQuotaOrAuthError && userApiKey) {
+        console.log('[OCR] Global key failed, falling back to User API Key');
+        try {
+          responseText = await runGemini(userApiKey);
+        } catch (userErr) {
+          throw userErr; // throw user error to outer catch block
+        }
+      } else if (isQuotaOrAuthError && !userApiKey) {
+         if (msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests')) {
+           return res.status(429).json({ message: 'QUOTA_EXCEEDED' });
+         } else {
+           return res.status(401).json({ message: 'INVALID_API_KEY' });
+         }
+      } else {
+         throw globalErr; // throw non-auth/quota errors
+      }
+    }
+
+    const cleanJson = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+    let parsedData;
+    try {
+      parsedData = JSON.parse(cleanJson);
+    } catch (parseError) {
+      console.error('[OCR] Gemini JSON Parse Error. Raw response:', responseText);
+      throw new Error('Invalid JSON from Gemini');
+    }
+
+    console.log('[OCR] Successfully used Gemini AI');
+    return res.json(parsedData);
+  } catch (error) {
+    console.error('[OCR] Gemini service error:', error.message || error);
+    const msg = error.message || '';
+    if (msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests')) {
+      return res.status(429).json({ message: 'QUOTA_EXCEEDED' });
+    }
+    if (msg.includes('API key not valid') || msg.includes('API_KEY_INVALID')) {
+      return res.status(401).json({ message: 'INVALID_API_KEY' });
+    }
+    return res.status(500).json({ message: 'SCAN_FAILED' });
+  }
+}));
+
+function getExt(mime) {
+  if (!mime) return '.png';
+  if (mime.includes('jpeg') || mime.includes('jpg')) return '.jpg';
+  if (mime.includes('webp')) return '.webp';
+  return '.png';
+}
+
 
 // --- Wallets ---
 app.post('/api/users/:userId/wallets', asyncHandler(async (req, res) => {
@@ -627,10 +820,19 @@ app.post('/api/users/:userId/wallets', asyncHandler(async (req, res) => {
 
 app.put('/api/users/:userId/wallets/:id', asyncHandler(async (req, res) => {
   const wallet = req.body;
+  const [oldRows] = await pool.execute('SELECT name FROM wallets WHERE id = ? AND user_id = ?', [req.params.id, req.params.userId]);
+  if (!oldRows[0]) return res.status(404).json({ message: 'Dompet tidak ditemukan.' });
+  const oldName = oldRows[0].name;
+
   await pool.execute(
     'UPDATE wallets SET name = COALESCE(?, name), type = COALESCE(?, type), account_number = ?, balance = COALESCE(?, balance) WHERE id = ? AND user_id = ?',
     [wallet.name ?? null, wallet.type ?? null, wallet.accountNumber ?? null, wallet.balance ?? null, req.params.id, req.params.userId],
   );
+
+  if (wallet.name && wallet.name !== oldName) {
+    await pool.execute('UPDATE transactions SET wallet_name = ? WHERE wallet_id = ? AND user_id = ?', [wallet.name, req.params.id, req.params.userId]);
+  }
+
   res.json({ ok: true });
 }));
 
@@ -643,6 +845,10 @@ app.delete('/api/users/:userId/wallets/:id', asyncHandler(async (req, res) => {
 app.post('/api/users/:userId/budgets', asyncHandler(async (req, res) => {
   const { category, limit } = req.body;
   if (!category || !limit) return res.status(400).json({ message: 'Kategori dan batas wajib diisi.' });
+
+  const [existing] = await pool.execute('SELECT id FROM budgets WHERE user_id = ? AND category = ? LIMIT 1', [req.params.userId, category]);
+  if (existing.length > 0) return res.status(400).json({ message: 'Anggaran untuk kategori ini sudah ada.' });
+
   const [result] = await pool.execute(
     'INSERT INTO budgets (user_id, category, limit_amount) VALUES (?, ?, ?)',
     [req.params.userId, category, limit],
@@ -675,7 +881,7 @@ app.post('/api/users/:userId/goals', asyncHandler(async (req, res) => {
 app.put('/api/users/:userId/goals/:id', asyncHandler(async (req, res) => {
   const { name, targetAmount, currentAmount, deadline } = req.body;
   await pool.execute(
-    'UPDATE goals SET name = ?, target_amount = ?, current_amount = ?, deadline = ? WHERE id = ? AND user_id = ?', 
+    'UPDATE goals SET name = ?, target_amount = ?, current_amount = ?, deadline = ? WHERE id = ? AND user_id = ?',
     [name, targetAmount, currentAmount, deadline, req.params.id, req.params.userId]
   );
   res.json({ ok: true });
@@ -706,7 +912,7 @@ app.put('/api/users/:userId/notifications/:id/read', asyncHandler(async (req, re
 app.post('/api/admin/notifications', asyncHandler(async (req, res) => {
   const { userId, title, message, type } = req.body;
   if (!title || !message) return res.status(400).json({ message: 'Title and message are required.' });
-  
+
   if (userId === 'all') {
     const [users] = await pool.execute('SELECT id FROM users');
     for (const u of users) {
@@ -794,7 +1000,7 @@ app.delete('/api/admin/users/:userId/:kind/:itemId', asyncHandler(async (req, re
 // Admin: Create sub-documents for any user
 app.post('/api/admin/users/:userId/transactions', asyncHandler(async (req, res) => {
   const tx = req.body;
-  if (!tx.title || !tx.amount || !tx.wallet || !tx.date || !tx.type) {
+  if (!tx.title || tx.amount === undefined || tx.amount === null || !tx.wallet || !tx.date || !tx.type) {
     return res.status(400).json({ message: 'Data transaksi tidak lengkap.' });
   }
   const [walletRows] = await pool.execute('SELECT id FROM wallets WHERE user_id = ? AND name = ? LIMIT 1', [req.params.userId, tx.wallet]);
@@ -829,16 +1035,29 @@ app.post('/api/admin/users/:userId/wallets', asyncHandler(async (req, res) => {
 
 app.put('/api/admin/users/:userId/wallets/:id', asyncHandler(async (req, res) => {
   const wallet = req.body;
+  const [oldRows] = await pool.execute('SELECT name FROM wallets WHERE id = ? AND user_id = ?', [req.params.id, req.params.userId]);
+  if (!oldRows[0]) return res.status(404).json({ message: 'Dompet tidak ditemukan.' });
+  const oldName = oldRows[0].name;
+
   await pool.execute(
     'UPDATE wallets SET name = COALESCE(?, name), type = COALESCE(?, type), account_number = ?, balance = COALESCE(?, balance) WHERE id = ? AND user_id = ?',
     [wallet.name ?? null, wallet.type ?? null, wallet.accountNumber ?? null, wallet.balance ?? null, req.params.id, req.params.userId],
   );
+
+  if (wallet.name && wallet.name !== oldName) {
+    await pool.execute('UPDATE transactions SET wallet_name = ? WHERE wallet_id = ? AND user_id = ?', [wallet.name, req.params.id, req.params.userId]);
+  }
+
   res.json({ ok: true });
 }));
 
 app.post('/api/admin/users/:userId/budgets', asyncHandler(async (req, res) => {
   const { category, limit } = req.body;
   if (!category || !limit) return res.status(400).json({ message: 'Kategori dan batas wajib diisi.' });
+
+  const [existing] = await pool.execute('SELECT id FROM budgets WHERE user_id = ? AND category = ? LIMIT 1', [req.params.userId, category]);
+  if (existing.length > 0) return res.status(400).json({ message: 'Anggaran untuk kategori ini sudah ada.' });
+
   const [result] = await pool.execute(
     'INSERT INTO budgets (user_id, category, limit_amount) VALUES (?, ?, ?)',
     [req.params.userId, category, limit],
@@ -857,7 +1076,7 @@ app.get('/api/admin/analytics', asyncHandler(async (_req, res) => {
   const [[txStats]] = await pool.execute('SELECT COUNT(*) as total_tx, SUM(amount) as volume FROM transactions WHERE type="income"');
   const [[walletStats]] = await pool.execute('SELECT COUNT(*) as total_wallets, SUM(balance) as total_balance FROM wallets');
   const [[userStats]] = await pool.execute('SELECT COUNT(*) as total_users FROM users');
-  
+
   res.json({
     totalUsers: Number(userStats.total_users || 0),
     totalWallets: Number(walletStats.total_wallets || 0),
@@ -961,23 +1180,23 @@ app.get('/api/admin/backup', asyncHandler((req, res) => {
   const dbUser = process.env.DB_USER || 'root';
   const dbPass = process.env.DB_PASSWORD || '';
   const dbName = process.env.DB_NAME || 'monevra';
-  
+
   const args = ['-h', dbHost, '-P', String(dbPort), '-u', dbUser];
   if (dbPass) args.push(`-p${dbPass}`);
   args.push(dbName);
-  
+
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   res.setHeader('Content-Disposition', `attachment; filename="monevra_backup_${dateStr}.sql"`);
   res.setHeader('Content-Type', 'application/sql');
-  
+
   const dump = spawn('mysqldump', args);
-  
+
   dump.stdout.pipe(res);
-  
+
   dump.stderr.on('data', (data) => {
     console.error(`mysqldump error: ${data}`);
   });
-  
+
   dump.on('error', (error) => {
     console.error('mysqldump process error', error);
     if (!res.headersSent) {

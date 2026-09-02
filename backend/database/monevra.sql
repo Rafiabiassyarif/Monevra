@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS `flowfinance`
+CREATE DATABASE IF NOT EXISTS `monevra`
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE `flowfinance`;
+USE `monevra`;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -109,7 +109,7 @@ CREATE TABLE `budgets` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `currency`) VALUES
   (1, 'Rafia Admin', 'rafiabiassyarif@gmail.com', '$2b$12$Nv.xWwuxoAskwrtsVZhfluedW7MWwKkHukSNwvZtIqxtyAu6Rf88.', 'admin', 'IDR'),
-  (2, 'Demo User', 'user.demo@flowfinance.com', '$2b$12$qehgZTVnUdhrm4v6QjtVJuwEx7FIq/6rNMqsmoqo191rGUDkQd3eu', 'user', 'IDR');
+  (2, 'Demo User', 'user.demo@monevra.com', '$2b$12$qehgZTVnUdhrm4v6QjtVJuwEx7FIq/6rNMqsmoqo191rGUDkQd3eu', 'user', 'IDR');
 
 INSERT INTO `wallets` (`id`, `user_id`, `name`, `type`, `account_number`, `balance`) VALUES
   (1, 2, 'Main Bank', 'Bank', '**** 4421', 8450.20),
@@ -155,7 +155,7 @@ CREATE TABLE `system_settings` (
 
 INSERT INTO `system_settings` (`setting_key`, `setting_value`) VALUES
   ('smtp_host', 'smtp.mailtrap.io'),
-  ('sender_email', 'noreply@flowfinance.com'),
+  ('sender_email', 'noreply@monevra.com'),
   ('notify_new_transaction', 'true'),
   ('notify_budget_alert', 'true'),
   ('email_weekly_report', 'false');

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Menu, Settings, X, ChevronRight, LogOut, Shield, Sun, Moon } from 'lucide-react';
+import { Search, Bell, Menu, Settings, X, ChevronRight, LogOut, Shield, Sun, Moon, TrendingUp, ShoppingCart } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -17,10 +17,10 @@ interface TopNavbarProps {
 }
 
   export default function TopNavbar({ onMenuClick, setActiveTab, activeTab }: TopNavbarProps) {
-    const { profile, transactions } = useFinance();
+    const { profile, transactions, updateProfile } = useFinance();
     const { isAdmin, logout, user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -110,7 +110,7 @@ interface TopNavbarProps {
             type="text" 
             name="search"
             autoComplete="off"
-            placeholder="Cari transaksi..." 
+            placeholder={t('custom.navSearchPlaceholder')} 
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -130,7 +130,7 @@ interface TopNavbarProps {
               >
                 {searchResults.length > 0 ? (
                   <div className="p-2">
-                    <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaksi</div>
+                    <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('custom.navTxSect')}</div>
                     {searchResults.map(tx => (
                       <button 
                         key={tx.id}
@@ -141,9 +141,14 @@ interface TopNavbarProps {
                         }}
                         className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-surface-hover transition-colors text-left"
                       >
-                        <div>
-                          <div className="text-sm font-medium text-slate-200">{tx.title}</div>
-                          <div className="text-xs text-slate-500">{tx.category}</div>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-xl ${tx.type === 'income' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                            {tx.type === 'income' ? <TrendingUp size={16} /> : <ShoppingCart size={16} />}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-200">{tx.title}</div>
+                            <div className="text-xs text-slate-500">{t('custom.cat' + tx.category) || tx.category}</div>
+                          </div>
                         </div>
                         <div className={`text-sm font-medium ${tx.type === 'income' ? 'text-green-400' : 'text-slate-200'}`}>
                           {tx.type === 'income' ? '+' : ''}{formatCurrency(tx.amount, profile.currency)}
@@ -166,7 +171,7 @@ interface TopNavbarProps {
         <button
           onClick={() => setIsSplitBillOpen(true)}
           className="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-400 hover:bg-brand-500/20 hover:text-brand-300 transition-colors border border-brand-500/20"
-          title="Kalkulator Patungan"
+          title={t('custom.navCalc')}
         >
           <span className="font-bold text-xs">%</span>
         </button>
@@ -177,6 +182,20 @@ interface TopNavbarProps {
           title={`Beralih ke mode ${isDark ? 'terang' : 'gelap'}`}
         >
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
+        <button
+          onClick={async () => {
+            const next = language === 'en' ? 'id' : 'en';
+            setLanguage(next);
+            try {
+              await updateProfile({ language: next });
+            } catch (e) { console.error(e); }
+          }}
+          className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-slate-400 hover:text-white transition-colors border border-border-dark text-xs font-bold"
+          title={language === 'en' ? 'Ganti ke Bahasa Indonesia' : 'Switch to English'}
+        >
+          {language === 'en' ? 'ID' : 'EN'}
         </button>
 
         <div className="relative" ref={notifRef}>
@@ -230,7 +249,7 @@ interface TopNavbarProps {
                 </div>
                 {unreadCount > 0 && (
                   <div className="p-3 text-center border-t border-border-dark bg-surface-dark">
-                    <button onClick={handleMarkAllRead} className="text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors">Tandai semua telah dibaca</button>
+                    <button onClick={handleMarkAllRead} className="text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors">{t('custom.navMarkRead')}</button>
                   </div>
                 )}
               </motion.div>
@@ -248,8 +267,8 @@ interface TopNavbarProps {
 
             </div>
             <img 
-              src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.name}&backgroundColor=transparent`}
-              alt="Pengguna" 
+              src={profile?.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${profile.name}&backgroundColor=transparent`}
+              alt={t('custom.navUser')} 
               className="w-10 h-10 rounded-full bg-surface-hover border border-border-dark group-hover:border-brand-500/50 transition-colors"
             />
           </div>
@@ -265,8 +284,8 @@ interface TopNavbarProps {
                 <div className="p-4 border-b border-border-dark mb-1 bg-gradient-to-b from-brand-500/10 to-transparent">
                   <div className="flex items-center gap-3">
                     <img 
-                      src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.name}&backgroundColor=transparent`}
-                      alt="Pengguna" 
+                      src={profile?.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${profile.name}&backgroundColor=transparent`}
+                      alt={t('custom.navUser')} 
                       className="w-12 h-12 rounded-full bg-black/50 border border-border-dark"
                     />
                     <div>
@@ -287,7 +306,7 @@ interface TopNavbarProps {
                     >
                       <div className="flex items-center gap-3">
                         <Shield size={18} className="text-slate-500" />
-                        <span className="font-medium">Dasbor Admin</span>
+                        <span className="font-medium">{t('custom.navAdmin')}</span>
                       </div>
                       <ChevronRight size={14} className="text-slate-600" />
                     </button>
@@ -317,8 +336,8 @@ interface TopNavbarProps {
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-colors font-medium"
                   >
-                    <LogOut size={18} />
-                    <span>Keluar</span>
+                    <LogOut size={16} />
+                    <span>{t('custom.navLogout')}</span>
                   </button>
                 </div>
               </motion.div>

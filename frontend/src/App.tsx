@@ -10,9 +10,15 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { FinanceProvider } from './context/FinanceContext';
 import { useTheme } from './hooks/useTheme';
+import { useLanguage } from './context/LanguageContext';
 import AdminDashboardPage from './components/admin/AdminDashboardPage';
 import TermsOfService from './components/legal/TermsOfService';
 import PrivacyPolicy from './components/legal/PrivacyPolicy';
+
+function ErrorBoundaryMessage() {
+  const { t } = useLanguage();
+  return <h2>{t('custom.errBoundary')}</h2>;
+}
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
   constructor(props: {children: React.ReactNode}) {
@@ -26,7 +32,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
     if (this.state.hasError) {
       return (
         <div style={{ padding: '20px', color: 'red', background: '#111', height: '100vh', fontFamily: 'monospace' }}>
-          <h2>Something went wrong.</h2>
+          <ErrorBoundaryMessage />
           <pre style={{ whiteSpace: 'pre-wrap' }}>{this.state.error?.toString()}</pre>
           <pre style={{ whiteSpace: 'pre-wrap', marginTop: '10px', fontSize: '12px', color: '#888' }}>{this.state.error?.stack}</pre>
         </div>

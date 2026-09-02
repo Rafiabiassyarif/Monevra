@@ -2,3 +2,12 @@ node_modules/
 dist/
 .env
 *.log
+
+# File test/debug yang bisa berisi API key — jangan commit
+test_gemini.mjs
+test_models.mjs
+debug.mjs
+models.json
+*_test.mjs
+test_*.mjs
+*.txt

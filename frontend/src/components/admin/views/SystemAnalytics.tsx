@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from "../../../context/LanguageContext";
 import { Activity, Server, Database, Users, Wallet, RefreshCw } from 'lucide-react';
 import { apiRequest } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/format';
@@ -15,6 +16,7 @@ interface AnalyticsData {
 const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#f43f5e', '#0ea5e9'];
 
 export default function SystemAnalytics() {
+  const { t } = useLanguage();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,15 +81,15 @@ export default function SystemAnalytics() {
       {loading && !data ? (
         <div className="h-60 flex flex-col items-center justify-center text-slate-500 glass-card rounded-[2rem]">
           <RefreshCw className="w-8 h-8 animate-spin mb-4 text-cyan-500" />
-          <p>Mengambil data dari server...</p>
+          <p>{t('custom.analyticsLoading')}</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard title="Total Pengguna" value={data?.totalUsers || 0} detail="Di Database" icon={Users} tone="cyan" />
-            <MetricCard title="Total Transaksi" value={data?.totalTransactions || 0} detail="Seluruh Waktu" icon={Activity} tone="green" />
-            <MetricCard title="Total Dompet" value={data?.totalWallets || 0} detail="Aktif" icon={Wallet} tone="cyan" />
-            <MetricCard title="Volume Transaksi" value={formatCurrency(data?.totalVolume || 0, 'IDR')} detail="Akumulasi" icon={Database} tone="green" />
+            <MetricCard title={t('custom.totalUsers')} value={data?.totalUsers || 0} detail={t('custom.inDatabase')} icon={Users} tone="cyan" />
+            <MetricCard title={t('custom.totalTransactions')} value={data?.totalTransactions || 0} detail={t('custom.allTime')} icon={Activity} tone="green" />
+            <MetricCard title={t('custom.totalWallets')} value={data?.totalWallets || 0} detail={t('custom.active')} icon={Wallet} tone="cyan" />
+            <MetricCard title={t('custom.txVolume')} value={formatCurrency(data?.totalVolume || 0, 'IDR')} detail={t('custom.accumulated')} icon={Database} tone="green" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">

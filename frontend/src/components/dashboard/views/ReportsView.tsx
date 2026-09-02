@@ -1,16 +1,18 @@
 import React from 'react';
 import { useFinance } from '../../../context/FinanceContext';
+import { useLanguage } from '../../../context/LanguageContext';
 import { Download, FileText, PieChart } from 'lucide-react';
 import { formatCurrency } from '../../../lib/format';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 export default function ReportsView() {
+  const { t } = useLanguage();
   const { getMonthlyIncome, getMonthlyExpense, getTotalBalance, transactions, profile } = useFinance();
 
   const handleExportExcel = async () => {
     if (transactions.length === 0) {
-      alert("Tidak ada data untuk diekspor");
+      alert(t("custom.reportNoDataExport"));
       return;
     }
 
@@ -18,19 +20,19 @@ export default function ReportsView() {
     workbook.creator = 'Monevra';
     workbook.created = new Date();
     
-    const sheet = workbook.addWorksheet('Data Transaksi Mentah');
+    const sheet = workbook.addWorksheet(t('custom.reportRawDataSheet'));
 
     // Kolom dan Lebar
     sheet.columns = [
-      { header: 'ID', key: 'id', width: 10 },
-      { header: 'Tanggal', key: 'date', width: 15 },
-      { header: 'Judul Transaksi', key: 'title', width: 35 },
-      { header: 'Kategori', key: 'category', width: 20 },
-      { header: 'Tipe', key: 'type', width: 15 },
-      { header: 'Dompet / Sumber', key: 'wallet', width: 20 },
-      { header: 'Nominal', key: 'amount', width: 20 },
-      { header: 'Mata Uang', key: 'currency', width: 15 },
-      { header: 'Status', key: 'status', width: 15 },
+      { header: t('custom.reportColId'), key: 'id', width: 10 },
+      { header: t('custom.reportColDate'), key: 'date', width: 15 },
+      { header: t('custom.reportColTitle'), key: 'title', width: 35 },
+      { header: t('custom.reportColCategory'), key: 'category', width: 20 },
+      { header: t('custom.reportColType'), key: 'type', width: 15 },
+      { header: t('custom.reportWalletSource'), key: 'wallet', width: 20 },
+      { header: t('custom.reportColAmount'), key: 'amount', width: 20 },
+      { header: t('custom.reportColCurrency'), key: 'currency', width: 15 },
+      { header: t('custom.reportColStatus'), key: 'status', width: 15 },
     ];
 
     // Styling Header
@@ -50,7 +52,7 @@ export default function ReportsView() {
         date: tx.date,
         title: tx.title,
         category: tx.category,
-        type: isIncome ? 'Pemasukan' : 'Pengeluaran',
+        type: isIncome ? t('custom.reportIncome') : t('custom.reportExpense'),
         wallet: tx.wallet,
         amount: Math.abs(tx.amount), // absolute value for clean formatting
         currency: profile.currency,
@@ -89,8 +91,8 @@ export default function ReportsView() {
       <div className="max-w-7xl mx-auto pb-12 flex flex-col gap-6 text-slate-200 print:hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-display font-bold text-slate-200">Laporan Keuangan</h2>
-            <p className="text-slate-400 text-sm">Buat dan ekspor ringkasan keuangan Anda.</p>
+            <h2 className="text-2xl font-display font-bold text-slate-200">{t('dashboard.reports')}</h2>
+            <p className="text-slate-400 text-sm">{t('custom.reportDesc')}</p>
           </div>
         </div>
 
@@ -101,20 +103,20 @@ export default function ReportsView() {
                 <FileText size={24} />
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-slate-200">Ringkasan Eksekutif</h3>
-                <p className="text-sm text-slate-400">Dokumen PDF Laporan Lengkap</p>
+                <h3 className="font-semibold text-lg text-slate-200">{t('custom.reportExecutive')}</h3>
+                <p className="text-sm text-slate-400">{t('custom.reportPdfDesc')}</p>
               </div>
             </div>
             <div className="bg-surface-dark rounded-xl p-4 text-sm text-slate-300 space-y-2">
-              <div className="flex justify-between"><span>Saldo Saat Ini:</span> <span className="font-bold">{formatCurrency(getTotalBalance(), profile.currency)}</span></div>
-              <div className="flex justify-between"><span>Total Pemasukan:</span> <span className="text-green-400 font-bold">+{formatCurrency(getMonthlyIncome(), profile.currency)}</span></div>
-              <div className="flex justify-between"><span>Total Pengeluaran:</span> <span className="text-red-400 font-bold">-{formatCurrency(getMonthlyExpense(), profile.currency)}</span></div>
+              <div className="flex justify-between"><span>{t('custom.walletCurrentBalance')}:</span> <span className="font-bold">{formatCurrency(getTotalBalance(), profile.currency)}</span></div>
+              <div className="flex justify-between"><span>{t('custom.reportTotalIncome')}</span> <span className="text-green-400 font-bold">+{formatCurrency(getMonthlyIncome(), profile.currency)}</span></div>
+              <div className="flex justify-between"><span>{t('custom.reportTotalExpense')}</span> <span className="text-red-400 font-bold">-{formatCurrency(getMonthlyExpense(), profile.currency)}</span></div>
             </div>
             <button 
               onClick={handleExportPDF}
               className="btn-premium w-full mt-auto"
             >
-              <Download size={18} /> Cetak Laporan PDF
+              <Download size={18} /> {t('custom.reportPrintPdf')}
             </button>
           </div>
 
@@ -124,18 +126,18 @@ export default function ReportsView() {
                 <PieChart size={24} />
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-slate-200">Data Mentah (Excel)</h3>
-                <p className="text-sm text-slate-400">Lembar Kerja Terformat (.xlsx)</p>
+                <h3 className="font-semibold text-lg text-slate-200">{t('custom.reportRawData')}</h3>
+                <p className="text-sm text-slate-400">{t('custom.reportExcelDesc')}</p>
               </div>
             </div>
             <p className="text-sm text-slate-400 flex-1">
-              Ekspor semua data transaksi mentah Anda secara detail (tanggal, kategori, dompet) ke format Excel dengan gaya visual profesional yang rapi.
+              {t('custom.reportExcelDesc')}
             </p>
             <button 
               onClick={handleExportExcel}
               className="btn-premium-success w-full mt-auto"
             >
-              <Download size={18} /> Ekspor Excel (.xlsx)
+              <Download size={18} /> {t('custom.reportExcelBtn')}
             </button>
           </div>
         </div>
@@ -200,9 +202,9 @@ export default function ReportsView() {
 
         {/* Table Header */}
         <div className="bg-brand-100 py-3 px-8 grid grid-cols-12 font-bold text-slate-800 text-xs tracking-wider mb-8 relative z-10">
-          <div className="col-span-5 uppercase">DESKRIPSI TRANSAKSI</div>
+          <div className="col-span-5 uppercase">{t('custom.reportColDesc')}</div>
           <div className="col-span-2 uppercase">KATEGORI</div>
-          <div className="col-span-2 text-center uppercase">DOMPET</div>
+          <div className="col-span-2 text-center uppercase">{t('custom.reportWallet')}</div>
           <div className="col-span-3 text-right uppercase">TOTAL</div>
         </div>
 
@@ -236,11 +238,11 @@ export default function ReportsView() {
           </div>
           <div className="w-1/2 space-y-5">
             <div className="flex justify-between font-bold text-slate-800 text-sm tracking-wider">
-              <span>TOTAL PEMASUKAN</span>
+              <span>{t('custom.reportTotalIncomeLbl')}</span>
               <span>{formatCurrency(getMonthlyIncome(), profile.currency).replace(profile.currency, profile.currency + ' ')}</span>
             </div>
             <div className="flex justify-between font-bold text-slate-800 text-sm tracking-wider">
-              <span className="uppercase">Total Pengeluaran</span>
+              <span className="uppercase">{t('custom.reportTotalExpenseLbl')}</span>
               <span>{formatCurrency(getMonthlyExpense(), profile.currency).replace(profile.currency, profile.currency + ' ')}</span>
             </div>
           </div>
@@ -248,7 +250,7 @@ export default function ReportsView() {
 
         {/* Grand Total */}
         <div className="bg-brand-100 py-5 px-8 flex justify-between items-center font-bold text-slate-900 tracking-wider mb-16 relative z-10">
-          <span className="text-sm">TOTAL KESELURUHAN</span>
+          <span className="text-sm">{t('custom.reportColGrandTotal')}</span>
           <span className="text-lg">{formatCurrency(getTotalBalance(), profile.currency).replace(profile.currency, profile.currency + ' ')}</span>
         </div>
 

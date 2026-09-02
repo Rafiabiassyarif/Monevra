@@ -1,38 +1,41 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Tag, SplitSquareHorizontal, History, Target, Users, ShieldAlert } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function AdvancedFeaturesSection() {
+  const { t } = useLanguage();
+  
   const features = [
     {
       icon: SplitSquareHorizontal,
-      title: 'Split Transactions',
-      desc: 'Divide single receipts across multiple categories perfectly.'
+      title: t('advanced.card1Title'),
+      desc: t('advanced.card1Desc')
     },
     {
       icon: Tag,
-      title: 'Custom Tags',
-      desc: 'Create personalized tagging systems for your specific needs.'
+      title: t('advanced.card2Title'),
+      desc: t('advanced.card2Desc')
     },
     {
       icon: History,
-      title: 'Unlimited History',
-      desc: 'Never lose a transaction. Search through years of data instantly.'
+      title: t('advanced.card3Title'),
+      desc: t('advanced.card3Desc')
     },
     {
       icon: Target,
-      title: 'Goal Tracking',
-      desc: 'Set savings goals and watch your progress update automatically.'
+      title: t('advanced.card4Title'),
+      desc: t('advanced.card4Desc')
     },
     {
       icon: Users,
-      title: 'Shared Wallets',
-      desc: 'Collaborate with your partner or roommates on shared expenses.'
+      title: t('advanced.card5Title'),
+      desc: t('advanced.card5Desc')
     },
     {
       icon: ShieldAlert,
-      title: 'Smart Alerts',
-      desc: 'Get notified of unusual spending patterns or upcoming bills.'
+      title: t('advanced.card6Title'),
+      desc: t('advanced.card6Desc')
     }
   ];
 
@@ -48,7 +51,7 @@ export default function AdvancedFeaturesSection() {
               viewport={{ once: true }}
               className="font-display text-4xl md:text-5xl font-bold mb-6 tracking-tight text-white"
             >
-              Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-brand-400">power users.</span>
+              {t('advanced.tag')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-brand-400">{t('advanced.title1')}</span>
             </motion.h2>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -57,7 +60,7 @@ export default function AdvancedFeaturesSection() {
               transition={{ delay: 0.1 }}
               className="text-slate-400 text-xl"
             >
-              Simple on the surface, incredibly deep underneath.
+              {t('advanced.subtitle')}
             </motion.p>
           </div>
           <motion.div

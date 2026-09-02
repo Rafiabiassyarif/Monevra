@@ -3,15 +3,15 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 const TOKEN_KEY = 'monevra_token';
 
 export function setAuthToken(token: string) {
-  sessionStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function getAuthToken(): string | null {
-  return sessionStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function clearAuthToken() {
-  sessionStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -32,7 +32,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   // Auto-logout on 401 (expired/invalid token)
   if (response.status === 401 && token) {
     clearAuthToken();
-    sessionStorage.removeItem('monevra_user');
+    localStorage.removeItem('monevra_user');
     window.location.href = '/login';
     throw new Error('Sesi Anda telah berakhir. Silakan login kembali.');
   }

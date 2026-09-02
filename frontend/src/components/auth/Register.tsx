@@ -4,6 +4,7 @@ import AuthLayout from './AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Mail, Lock, User, ArrowRight, Loader2, Github } from 'lucide-react';
+import PuzzleCaptcha from './PuzzleCaptcha';
 import { motion } from 'motion/react';
 
 export default function Register() {
@@ -15,6 +16,7 @@ export default function Register() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const navigate = useNavigate();
   const { registerWithEmail, user, isAdmin } = useAuth();
 
@@ -32,17 +34,21 @@ export default function Register() {
     e.preventDefault();
     setError('');
     if (password !== confirmPassword) {
-      setError('Konfirmasi password tidak cocok.');
+      setError(t('auth.passMismatch'));
       return;
     }
     if (!agreeToTerms) {
-      setError('Anda harus menyetujui Syarat & Ketentuan.');
+      setError(t('auth.errorTerms'));
+      return;
+    }
+    if (!captchaToken) {
+      setError(t('messages.puzzleRequired'));
       return;
     }
     setLoading(true);
     
     try {
-      await registerWithEmail(email, password, name);
+      await registerWithEmail(email, password, name, captchaToken);
       navigate(`/login?registered=true&email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(err.message || 'Gagal membuat akun');
@@ -54,7 +60,7 @@ export default function Register() {
   const handleGoogleLogin = () => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId) {
-      setError('Google OAuth Client ID belum dikonfigurasi.');
+      setError(t('messages.googleMissing'));
       return;
     }
     const redirectUri = `${window.location.origin}/auth/callback/google`;
@@ -64,7 +70,7 @@ export default function Register() {
   const handleGithubLogin = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     if (!clientId) {
-      setError('GitHub OAuth Client ID belum dikonfigurasi.');
+      setError(t('messages.githubMissing'));
       return;
     }
     const redirectUri = `${window.location.origin}/auth/callback/github`;
@@ -129,7 +135,7 @@ export default function Register() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-sm placeholder-transparent"
+              className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
               placeholder={t('auth.namePlaceholder')}
             />
             <label htmlFor="name" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
@@ -147,7 +153,7 @@ export default function Register() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-sm placeholder-transparent"
+              className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
               placeholder={t('auth.emailPlaceholder')}
             />
             <label htmlFor="email" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
@@ -166,7 +172,7 @@ export default function Register() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-sm placeholder-transparent"
+                className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
                 placeholder={t('auth.passwordPlaceholder')}
                 minLength={6}
               />
@@ -204,19 +210,19 @@ export default function Register() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-sm placeholder-transparent"
-                placeholder="Konfirmasi Password"
+                className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                placeholder={t('auth.confirmPass')}
                 minLength={6}
               />
               <label htmlFor="confirmPassword" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
-                Konfirmasi Password
+                {t('auth.confirmPass')}
               </label>
             </div>
             {confirmPassword.length > 0 && password !== confirmPassword && (
-              <p className="text-xs text-red-400 px-1 mt-1">Password tidak cocok</p>
+              <p className="text-xs text-red-400 px-1 mt-1">{t('auth.passMismatch')}</p>
             )}
             {confirmPassword.length > 0 && password === confirmPassword && confirmPassword.length >= 6 && (
-              <p className="text-xs text-green-400 px-1 mt-1">✓ Password cocok</p>
+              <p className="text-xs text-green-400 px-1 mt-1">{t('auth.passMatch')}</p>
             )}
           </motion.div>
 
@@ -230,30 +236,25 @@ export default function Register() {
               className="mt-1 w-4 h-4 rounded border-white/20 bg-surface-dark/40 text-brand-500 focus:ring-brand-500/30 cursor-pointer accent-brand-500"
             />
             <label htmlFor="terms" className="text-sm text-slate-400 cursor-pointer leading-relaxed">
-              Saya setuju dengan <Link to="/terms" target="_blank" className="text-brand-400 hover:text-brand-300 font-medium">Syarat & Ketentuan</Link> dan <Link to="/privacy" target="_blank" className="text-brand-400 hover:text-brand-300 font-medium">Kebijakan Privasi</Link> Monevra
+              {t('auth.agreeTo')} <Link to="/terms" target="_blank" className="text-brand-400 hover:text-brand-300 font-medium">{t('auth.terms')}</Link> {t('auth.and')} <Link to="/privacy" target="_blank" className="text-brand-400 hover:text-brand-300 font-medium">{t('auth.privacy')}</Link>
             </label>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="flex justify-center mt-4 w-full">
+            <PuzzleCaptcha onVerify={(token) => setCaptchaToken(token)} />
           </motion.div>
 
           <motion.button
             variants={itemVariants}
             type="submit"
             disabled={loading || !agreeToTerms}
-            className="w-full relative group rounded-xl p-[1px] transition-all duration-500 disabled:opacity-70 mt-6 shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+            className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 text-white rounded-2xl font-semibold text-lg transition-all shadow-lg hover:shadow-brand-500/25 disabled:opacity-70 disabled:cursor-not-allowed group mt-2"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-brand-500 via-accent-500 to-brand-500 rounded-xl opacity-80 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] group-hover:bg-[position:100%_0]"></span>
-            <div className="relative flex items-center justify-center gap-2 px-4 py-3.5 bg-surface-dark/80 backdrop-blur-md rounded-xl transition-all duration-300 group-hover:bg-transparent">
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 text-white animate-spin" />
-                  <span className="font-semibold text-white">{t('auth.creatingAccount')}</span>
-                </>
-              ) : (
-                <>
-                  <span className="font-semibold text-white text-base">{t('auth.createAccount')}</span>
-                  <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </div>
+            {loading ? (
+              <><Loader2 className="w-6 h-6 animate-spin" /> {t('auth.creatingAccount')}</>
+            ) : (
+              <><span className="text-white text-base">{t('auth.createAccount')}</span> <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" /></>
+            )}
           </motion.button>
         </form>
 
@@ -268,8 +269,8 @@ export default function Register() {
           </div>
           
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium text-white shadow-sm cursor-pointer">
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl border border-white/5 bg-black/20 hover:bg-black/40 hover:border-white/10 transition-all duration-300 text-sm font-medium text-white cursor-pointer backdrop-blur-xl shadow-inner group">
+              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -277,8 +278,8 @@ export default function Register() {
               </svg>
               {t('auth.google')}
             </button>
-            <button type="button" onClick={handleGithubLogin} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium text-white shadow-sm cursor-pointer">
-              <Github className="w-5 h-5" />
+            <button type="button" onClick={handleGithubLogin} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-2xl border border-white/5 bg-black/20 hover:bg-black/40 hover:border-white/10 transition-all duration-300 text-sm font-medium text-white cursor-pointer backdrop-blur-xl shadow-inner group">
+              <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
               GitHub
             </button>
           </div>

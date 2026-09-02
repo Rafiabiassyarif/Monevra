@@ -10,8 +10,10 @@ export default function AuthLayout({ children, title, subtitle }: { children: Re
     <div className="min-h-screen flex bg-bg-dark relative overflow-hidden selection:bg-brand-500/30 text-slate-200">
       
       {/* Global Background Ambient Effects */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-600/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen animate-[pulse_8s_ease-in-out_infinite]" />
-      <div className="absolute bottom-[-10%] right-[40%] w-[30%] h-[30%] bg-accent-600/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen animate-[pulse_10s_ease-in-out_infinite_alternate]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-900/40 via-bg-dark to-bg-dark opacity-80" />
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-brand-500/20 rounded-full blur-[140px] pointer-events-none mix-blend-screen animate-[pulse_6s_ease-in-out_infinite]" />
+      <div className="absolute bottom-[-20%] right-[30%] w-[40%] h-[40%] bg-accent-500/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen animate-[pulse_8s_ease-in-out_infinite_alternate]" />
+
 
       {/* Left Column: Form */}
       <div className="flex-1 flex flex-col justify-center relative z-10 w-full lg:w-1/2 px-6 sm:px-12 lg:px-24 py-12">
@@ -33,8 +35,11 @@ export default function AuthLayout({ children, title, subtitle }: { children: Re
               </div>
             </Link>
 
-          <div className="bg-surface-dark/70 backdrop-blur-xl border border-white/10 p-8 sm:p-12 rounded-3xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.5)] ring-1 ring-white/5 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          <div className="bg-surface-dark/40 backdrop-blur-xl border border-white/10 p-8 sm:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group hover:border-brand-500/30 transition-all duration-700">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-brand-500/20 transition-colors duration-700"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-accent-500/20 transition-colors duration-700"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+            
             <div className="relative z-10">
               <h2 className="text-3xl font-display font-bold tracking-tight text-white mb-2">
                 {title}
@@ -51,9 +56,9 @@ export default function AuthLayout({ children, title, subtitle }: { children: Re
       {/* Right Column: Visual Showcase (Hidden on Mobile) */}
       <div className="hidden lg:flex flex-1 relative items-center justify-center p-12 overflow-hidden">
         {/* Background Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-br from-bg-dark via-surface-dark to-brand-950/40" />
-        <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-brand-600/20 rounded-full blur-[140px] pointer-events-none mix-blend-screen" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] bg-accent-600/20 rounded-full blur-[140px] pointer-events-none mix-blend-screen" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-950/40 via-surface-dark to-bg-dark" />
+        <div className="absolute top-[-20%] right-[-10%] w-[80%] h-[80%] bg-brand-600/25 rounded-full blur-[160px] pointer-events-none mix-blend-screen" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[80%] h-[80%] bg-accent-600/25 rounded-full blur-[160px] pointer-events-none mix-blend-screen" />
         
         {/* Abstract Glassmorphism Element */}
         <motion.div 

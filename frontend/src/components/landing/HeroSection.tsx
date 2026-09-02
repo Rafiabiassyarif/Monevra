@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, ChevronRight, Play } from 'lucide-react';
+import { ArrowRight, ChevronRight, Play, Coffee, ArrowDownLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -74,126 +74,127 @@ export default function HeroSection() {
         </a>
       </motion.div>
 
-      {/* Floating UI Presentation - Non-Web, Abstract Cards */}
+      {/* Floating UI - overlapping seperti asli, teks tetap horizontal */}
       <motion.div 
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-        className="mt-32 w-full max-w-5xl relative perspective-1000 hidden md:block h-[500px]"
+        className="mt-32 w-full max-w-6xl mx-auto relative perspective-1000 hidden md:block h-[560px]"
       >
-         <div className="absolute inset-0 bg-gradient-to-b from-brand-500/20 to-transparent blur-3xl -z-10 rounded-full" />
-         
-         {/* Center Large Card: Total Balance & Graph */}
-         <motion.div 
-           animate={{ y: [-15, 15, -15], rotateX: [5, -5, 5], rotateY: [-5, 5, -5] }}
-           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] rounded-[2.5rem] border border-white/10 bg-surface-dark/60 backdrop-blur-3xl overflow-hidden shadow-[0_0_80px_rgba(59,130,246,0.3)] ring-1 ring-white/10 z-20 p-8"
-         >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/20 blur-[80px] rounded-full pointer-events-none" />
-            <div className="relative z-10 flex justify-between items-start mb-8">
-               <div>
-                 <div className="text-slate-400 font-medium mb-2">{t('heroCards.totalWealth')}</div>
-                 <div className="text-5xl font-display font-bold text-white tracking-tight">Rp 245.5M</div>
-               </div>
-               <div className="w-14 h-14 rounded-2xl bg-brand-500/20 flex items-center justify-center border border-brand-500/30 text-brand-400 text-2xl shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                 💎
-               </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 to-transparent blur-3xl -z-10 rounded-full pointer-events-none" />
+
+        {/* Total Wealth - tengah, paling depan */}
+        <motion.div 
+          animate={{ y: [-12, 12, -12] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[340px] rounded-[2rem] border border-white/10 bg-[#161f33] shadow-[0_30px_80px_rgba(0,0,0,0.6)] ring-1 ring-white/5 z-30 p-8 overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="relative z-10 flex justify-between items-start mb-8">
+            <div>
+              <div className="text-slate-400 font-medium mb-2 whitespace-nowrap">{t('heroCards.totalWealth')}</div>
+              <div className="text-5xl font-display font-bold text-white tracking-tight whitespace-nowrap">{t('heroCards.wealthValue')}</div>
+            </div>
+            <div className="w-14 h-14 rounded-2xl bg-brand-500/20 flex items-center justify-center border border-brand-500/30 text-brand-400 text-2xl shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+              💎
+            </div>
+          </div>
+          
+          <div className="absolute bottom-0 left-0 right-0 h-48 w-full z-0">
+            <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="heroSparkline" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(56, 189, 248, 0.5)" />
+                  <stop offset="100%" stopColor="rgba(56, 189, 248, 0)" />
+                </linearGradient>
+                <filter id="glowChart" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              <path d="M0,100 L0,50 C30,40 40,80 70,30 C85,5 95,20 100,20 L100,100 Z" fill="url(#heroSparkline)" />
+              <path d="M0,50 C30,40 40,80 70,30 C85,5 95,20 100,20" fill="none" stroke="#38bdf8" strokeWidth="3" filter="url(#glowChart)" />
+              <g transform="translate(100, 20)">
+                <ellipse cx="0" cy="0" rx="8" ry="3" fill="white" filter="url(#glowChart)" />
+                <ellipse cx="0" cy="0" rx="4" ry="1.5" fill="#38bdf8" />
+              </g>
+            </svg>
+          </div>
+        </motion.div>
+
+        {/* FLOW - kiri atas, di belakang Total Wealth */}
+        <motion.div 
+          animate={{ y: [0, -15, 0], rotateZ: [-12, -10, -12] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute left-[8%] top-[2%] w-[340px] rounded-[1.5rem] bg-gradient-to-br from-[#1a5a9c] to-[#0f3c6e] shadow-2xl p-6 z-10 overflow-hidden group"
+        >
+          <div className="absolute inset-0 bg-white/5 opacity-50 mix-blend-overlay pointer-events-none rounded-[1.5rem]"></div>
+          <div className="flex justify-between items-center mb-12 relative z-10">
+            <span className="font-display font-bold text-white text-xl tracking-widest whitespace-nowrap">{t('heroCards.virtualCard')}</span>
+            <svg className="w-10 h-10" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="12" fill="white" fillOpacity="0.4"/>
+              <circle cx="24" cy="12" r="12" fill="white" fillOpacity="0.4"/>
+            </svg>
+          </div>
+          <div className="font-mono text-white/90 tracking-[0.25em] mb-6 relative z-10 whitespace-nowrap text-lg">{t('heroCards.cardNumber')}</div>
+          <div className="flex justify-between text-white/70 text-xs font-medium relative z-10 uppercase tracking-wider whitespace-nowrap">
+            <span>{t('heroCards.cardHolder')}</span>
+            <span>{t('heroCards.cardExpiry')}</span>
+          </div>
+        </motion.div>
+
+        {/* Recent Transaction - kanan bawah, overlap Total Wealth */}
+        <motion.div 
+          animate={{ y: [0, 20, 0], rotateZ: [5, 7, 5] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute right-[5%] bottom-[10%] w-[320px] rounded-3xl border border-white/5 bg-[#1a2130] shadow-[0_40px_80px_rgba(0,0,0,0.5)] p-6 z-40"
+        >
+          <div className="text-sm font-semibold text-white mb-6 flex items-center justify-between">
+            <span className="whitespace-nowrap">{t('heroCards.recentTransaction')}</span>
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0 ml-2"></span>
+          </div>
+          
+          <div className="space-y-5">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#00704A] flex items-center justify-center shrink-0">
+                <Coffee className="w-5 h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-slate-200 text-sm truncate">{t('heroCards.starbucks')}</div>
+                <div className="text-xs text-slate-500 truncate">{t('heroCards.starbucksTime')}</div>
+              </div>
+              <div className="ml-auto font-bold text-white whitespace-nowrap shrink-0">{t('heroCards.starbucksAmount')}</div>
             </div>
             
-            <div className="relative z-10 h-40 w-full mt-4">
-              {/* SVG Sparkline */}
-              <svg className="absolute bottom-0 w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                <defs>
-                  <linearGradient id="heroSparkline" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="rgba(96, 165, 250, 0.6)" />
-                    <stop offset="100%" stopColor="rgba(96, 165, 250, 0)" />
-                  </linearGradient>
-                  <filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                </defs>
-                <path d="M0,100 L0,50 Q20,30 40,60 T80,20 T100,40 L100,100 Z" fill="url(#heroSparkline)" />
-                <path d="M0,50 Q20,30 40,60 T80,20 T100,40" fill="none" stroke="#60a5fa" strokeWidth="3" filter="url(#heroGlow)" />
-                <circle cx="100" cy="40" r="4" fill="#fff" filter="url(#heroGlow)" />
-                <circle cx="100" cy="40" r="2" fill="#60a5fa" />
-              </svg>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center shrink-0 border border-brand-500/20">
+                <ArrowDownLeft className="w-5 h-5 text-brand-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-slate-200 text-sm truncate">{t('heroCards.incomingTransfer')}</div>
+                <div className="text-xs text-slate-500 truncate">{t('heroCards.transferTime')}</div>
+              </div>
+              <div className="ml-auto font-bold text-green-400 whitespace-nowrap shrink-0">{t('heroCards.transferAmount')}</div>
             </div>
-         </motion.div>
+          </div>
+        </motion.div>
 
-         {/* Floating Card 1: Virtual Card */}
-         <motion.div 
-           animate={{ y: [0, -20, 0], rotateZ: [-5, -2, -5] }}
-           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-           className="absolute left-[5%] top-[10%] w-72 rounded-3xl border border-white/20 bg-gradient-to-br from-cyan-500/40 to-brand-600/40 backdrop-blur-xl shadow-2xl p-6 z-10 overflow-hidden group"
-         >
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
-            <div className="flex justify-between items-center mb-10 relative z-10">
-               <span className="font-display font-bold text-white text-lg tracking-widest">{t('heroCards.virtualCard')}</span>
-               <svg className="w-8 h-8" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="12" fill="white" fillOpacity="0.5"/>
-                  <circle cx="24" cy="12" r="12" fill="white" fillOpacity="0.5"/>
-               </svg>
+        {/* Smart Insight - kiri bawah */}
+        <motion.div 
+          animate={{ y: [-10, 8, -10] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+          className="absolute left-[8%] bottom-[12%] w-[320px] rounded-3xl border border-white/5 bg-[#171e2b] shadow-[0_30px_60px_rgba(0,0,0,0.4)] p-5 z-40"
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#202d40] flex items-center justify-center shrink-0 border border-white/5">
+              <span className="text-amber-300 font-bold text-xl">✨</span>
             </div>
-            <div className="font-mono text-white/80 tracking-[0.2em] mb-4 relative z-10">**** **** **** 4281</div>
-            <div className="flex justify-between text-white/60 text-xs font-medium relative z-10 uppercase tracking-wider">
-               <span>John Doe</span>
-               <span>12/28</span>
+            <div className="min-w-0 flex flex-col justify-center mt-1">
+              <h4 className="text-white font-semibold text-sm mb-1 whitespace-nowrap">{t('heroCards.smartInsight')}</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">{t('heroCards.insightDesc')}</p>
             </div>
-         </motion.div>
-
-         {/* Floating Card 2: Recent Transaction */}
-         <motion.div 
-           animate={{ y: [0, 25, 0], rotateZ: [3, 6, 3] }}
-           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-           className="absolute right-[2%] bottom-[15%] w-80 rounded-3xl border border-white/10 bg-surface-dark/80 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.4)] p-6 z-30"
-         >
-           <div className="text-sm font-semibold text-white mb-5 flex items-center justify-between">
-              {t('heroCards.recentTransaction')}
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-           </div>
-           
-           <div className="space-y-4">
-             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-2xl bg-surface-dark flex items-center justify-center border border-white/5 shadow-inner">
-                 <span className="text-xl">☕</span>
-               </div>
-               <div>
-                 <div className="font-medium text-slate-200 text-sm">Starbucks</div>
-                 <div className="text-xs text-slate-500">{t('heroCards.today')}, 14:45</div>
-               </div>
-               <div className="ml-auto font-bold text-white">-Rp 55.000</div>
-             </div>
-             
-             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-2xl bg-brand-500/20 flex items-center justify-center border border-brand-500/20 shadow-inner">
-                 <span className="text-xl text-brand-400">💸</span>
-               </div>
-               <div>
-                 <div className="font-medium text-slate-200 text-sm">{t('heroCards.incomingTransfer')}</div>
-                 <div className="text-xs text-slate-500">{t('heroCards.yesterday')}, 09:00</div>
-               </div>
-               <div className="ml-auto font-bold text-green-400">+Rp 2.5M</div>
-             </div>
-           </div>
-         </motion.div>
-
-         {/* Floating Card 3: AI Insights */}
-         <motion.div 
-           animate={{ y: [-15, 10, -15], x: [-10, 10, -10] }}
-           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-           className="absolute left-[5%] bottom-[5%] w-64 rounded-3xl border border-accent-500/30 bg-surface-dark/90 backdrop-blur-xl shadow-[0_20px_40px_rgba(139,92,246,0.3)] p-5 z-20"
-         >
-            <div className="flex items-start gap-4">
-               <div className="w-10 h-10 rounded-full bg-accent-500/20 flex items-center justify-center shrink-0 border border-accent-500/30 shadow-[0_0_15px_rgba(139,92,246,0.4)]">
-                 <span className="text-accent-400 font-bold text-lg">✨</span>
-               </div>
-               <div>
-                  <h4 className="text-white font-semibold text-sm mb-1">{t('heroCards.smartInsight')}</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">{t('heroCards.insightDesc')}</p>
-               </div>
-            </div>
-         </motion.div>
+          </div>
+        </motion.div>
 
       </motion.div>
     </section>

@@ -4,6 +4,7 @@ import AuthLayout from './AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Mail, ArrowRight, Loader2, CheckCircle2, Lock, KeyRound } from 'lucide-react';
+import PuzzleCaptcha from './PuzzleCaptcha';
 import { motion } from 'motion/react';
 
 export default function ForgotPassword() {
@@ -16,6 +17,7 @@ export default function ForgotPassword() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const { resetPassword, verifyResetCode, confirmPasswordReset } = useAuth();
 
   const handleReset = async (e: React.FormEvent) => {
@@ -26,20 +28,31 @@ export default function ForgotPassword() {
     
     try {
       if (step === 'email') {
-        const response = await resetPassword(email);
-        setMessage(response.message || 'Kode OTP telah dikirim ke email Anda.');
+        if (!captchaToken) {
+          setError(t('auth.captchaRequired'));
+          setLoading(false);
+          return;
+        }
+        const response = await resetPassword(email, captchaToken);
+        setMessage(t('auth.otpSent'));
         setStep('code');
       } else if (step === 'code') {
         await verifyResetCode(email, code);
-        setMessage('Kode valid. Silakan masukkan password baru Anda.');
+        setMessage(t('auth.otpValid'));
         setStep('password');
       } else {
         await confirmPasswordReset(email, newPassword, code);
-        setMessage('Password berhasil direset! Mengalihkan ke halaman login...');
+        setMessage(t('auth.resetSuccess'));
         setTimeout(() => navigate('/login'), 2000);
       }
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan.');
+      let errorMessage = err.message;
+      if (errorMessage === 'Email tidak terdaftar.') errorMessage = t('auth.emailNotFound');
+      else if (errorMessage === 'Kode OTP telah kedaluwarsa.') errorMessage = t('auth.otpExpired');
+      else if (errorMessage === 'Kode OTP salah.') errorMessage = t('auth.otpInvalid');
+      else if (errorMessage === 'Terjadi kesalahan internal server.') errorMessage = t('auth.internalError');
+      
+      setError(errorMessage || t('auth.defaultError'));
     } finally {
       setLoading(false);
     }
@@ -87,7 +100,7 @@ export default function ForgotPassword() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-sm placeholder-transparent"
+                  className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
                   placeholder={t('auth.emailPlaceholder')}
                 />
                 <label htmlFor="email" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
@@ -107,12 +120,12 @@ export default function ForgotPassword() {
                   required
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-lg tracking-widest font-mono placeholder-transparent"
+                  className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-lg tracking-widest font-mono placeholder-transparent backdrop-blur-xl shadow-inner"
                   placeholder="000000"
                   maxLength={6}
                 />
                 <label htmlFor="code" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
-                  Kode Verifikasi (6 Angka)
+                  {t('auth.verifyCodeLabel')}
                 </label>
               </motion.div>
             )}
@@ -128,13 +141,19 @@ export default function ForgotPassword() {
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="peer block w-full appearance-none rounded-xl border border-white/10 bg-surface-dark/40 pl-11 px-4 pt-5 pb-2 text-white shadow-inner focus:border-brand-400 focus:bg-surface-dark/80 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all duration-300 hover:border-white/20 sm:text-sm placeholder-transparent"
+                  className="peer block w-full appearance-none rounded-2xl border border-white/5 bg-black/20 pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-white/10 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
                   placeholder="••••••••"
                   minLength={6}
                 />
                 <label htmlFor="newPassword" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
-                  {t('auth.passwordLabel')} Baru
+                  {t('auth.newPasswordLabel')}
                 </label>
+              </motion.div>
+            )}
+
+            {step === 'email' && (
+              <motion.div variants={itemVariants} className="flex justify-center mt-4">
+                <PuzzleCaptcha onVerify={(token) => setCaptchaToken(token)} />
               </motion.div>
             )}
 
@@ -142,24 +161,21 @@ export default function ForgotPassword() {
               variants={itemVariants}
               type="submit"
               disabled={loading}
-              className="w-full relative group rounded-xl p-[1px] transition-all duration-500 disabled:opacity-70 mt-6 shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+              className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-brand-600 to-accent-600 hover:from-brand-500 hover:to-accent-500 text-white rounded-2xl font-semibold text-lg transition-all shadow-lg hover:shadow-brand-500/25 disabled:opacity-70 disabled:cursor-not-allowed group mt-2"
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-brand-500 via-accent-500 to-brand-500 rounded-xl opacity-80 group-hover:opacity-100 transition-opacity duration-500 bg-[length:200%_auto] group-hover:bg-[position:100%_0]"></span>
-              <div className="relative flex items-center justify-center gap-2 px-4 py-3.5 bg-surface-dark/80 backdrop-blur-md rounded-xl transition-all duration-300 group-hover:bg-transparent">
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 text-white animate-spin" />
-                    <span className="font-semibold text-white">{t('auth.processing')}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="font-semibold text-white text-base">
-                      {step === 'email' ? t('auth.resetPassword') : (step === 'code' ? 'Verifikasi Kode' : 'Ubah Kata Sandi')}
-                    </span>
-                    <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </div>
+              {loading ? (
+                <>
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  <span className="font-semibold text-white">{t('auth.processing')}</span>
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-white text-base">
+                    {step === 'email' ? t('auth.resetPassword') : (step === 'code' ? t('auth.verifyCodeBtn') : t('auth.changePasswordBtn'))}
+                  </span>
+                  <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
             </motion.button>
           </div>
         </form>
