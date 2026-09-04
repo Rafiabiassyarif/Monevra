@@ -4,6 +4,7 @@ import { Database, Plus, Pencil, Trash, X, Save, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { apiRequest } from '../../../lib/api';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../../lib/utils';
 
 // Interfaces
 interface Category {
@@ -435,7 +436,7 @@ function CurrencyModal({ cur, onClose, onSave }: { cur: Currency | null, onClose
           </label>
           <label className="block">
             <span className="block text-xs font-medium text-slate-400 mb-1">Nilai Tukar ke IDR (Rp)</span>
-            <input required type="number" step="0.01" value={form.rate || ''} onChange={e => setForm({...form, rate: Number(e.target.value)})} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors" placeholder="Mis. 20700" />
+            <input required type="number" step="0.01" onKeyDown={blockNonNumericKey} onPaste={sanitizeNumericPaste} value={form.rate || ''} onChange={e => setForm({...form, rate: Number(e.target.value)})} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500/50 transition-colors" placeholder="Mis. 20700" />
           </label>
         </div>
         <div className="mt-8">

@@ -1,0 +1,23 @@
+{
+  "name": "monevra-desktop",
+  "productName": "Monevra",
+  "version": "1.0.0",
+  "description": "Monevra – Manajemen Keuangan Pribadi (Desktop)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:frontend": "cd ../frontend && npm run build",
+    "build": "npm run build:frontend && electron-builder --win nsis",
+    "pack": "npm run build:frontend && electron-builder --dir",
+    "dist": "electron-builder --win nsis"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "electron": "^44.1.1",
+    "electron-builder": "^26.15.3",
+    "png-to-ico": "^3.0.2"
+  }
+}

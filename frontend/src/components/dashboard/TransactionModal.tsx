@@ -6,6 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { Transaction } from '../../types';
 import { convertToBase, convertFromBase } from '../../lib/exchangeRates';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../lib/utils';
 import CameraScannerModal from './CameraScannerModal';
 
 const CATEGORIES = {
@@ -349,6 +350,8 @@ export default function TransactionModal({ onClose, txToEdit }: { onClose: () =>
                           <input
                             type="number"
                             step="0.01" required
+                            onKeyDown={blockNonNumericKey}
+                            onPaste={sanitizeNumericPaste}
                             className="w-full bg-bg-dark border border-border-dark rounded-xl pl-11 pr-3 py-2 text-white focus:outline-none focus:border-brand-500/50 transition-all text-sm font-bold"
                             placeholder="0"
                             value={item.amount}

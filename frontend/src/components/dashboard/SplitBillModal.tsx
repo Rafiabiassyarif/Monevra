@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Users, Calculator, Receipt, Copy, Check, Sparkles, Percent, Tag } from 'lucide-react';
 import { formatCurrency } from '../../lib/format';
 import { convertToBase } from '../../lib/exchangeRates';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../lib/utils';
 
 export default function SplitBillModal({ onClose, currency = 'IDR' }: { onClose: () => void, currency?: string }) {
   const { t } = useLanguage();
@@ -73,6 +74,8 @@ export default function SplitBillModal({ onClose, currency = 'IDR' }: { onClose:
               <input
                 type="number"
                 min="0"
+                onKeyDown={blockNonNumericKey}
+                onPaste={sanitizeNumericPaste}
                 className="w-full bg-surface-hover border border-border-dark rounded-xl pl-9 pr-4 py-2.5 sm:py-3 text-slate-200 focus:outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 text-lg font-bold transition-all shadow-sm"
                 placeholder="0"
                 value={amount}
@@ -93,6 +96,8 @@ export default function SplitBillModal({ onClose, currency = 'IDR' }: { onClose:
                   type="number"
                   min="0"
                   max="100"
+                  onKeyDown={blockNonNumericKey}
+                  onPaste={sanitizeNumericPaste}
                   className="w-full bg-surface-hover border border-border-dark rounded-xl pl-9 pr-4 py-2 sm:py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 text-base font-semibold transition-all shadow-sm"
                   placeholder="0"
                   value={tax || ''}
@@ -112,6 +117,8 @@ export default function SplitBillModal({ onClose, currency = 'IDR' }: { onClose:
                   type="number"
                   min="0"
                   max="100"
+                  onKeyDown={blockNonNumericKey}
+                  onPaste={sanitizeNumericPaste}
                   className="w-full bg-surface-hover border border-border-dark rounded-xl pl-9 pr-4 py-2 sm:py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 text-base font-semibold transition-all shadow-sm"
                   placeholder="0"
                   value={service || ''}
@@ -131,13 +138,15 @@ export default function SplitBillModal({ onClose, currency = 'IDR' }: { onClose:
                   <Tag size={14} />
                 </div>
                 <input
-                  type="number"
-                  min="0"
-                  className="w-full bg-surface-hover border border-border-dark rounded-xl pl-9 pr-4 py-2 sm:py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 text-base font-semibold transition-all shadow-sm"
-                  placeholder="0"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
-                />
+                                  type="number"
+                                  min="0"
+                                  onKeyDown={blockNonNumericKey}
+                                  onPaste={sanitizeNumericPaste}
+                                  className="w-full bg-surface-hover border border-border-dark rounded-xl pl-9 pr-4 py-2 sm:py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10 text-base font-semibold transition-all shadow-sm"
+                                  placeholder="0"
+                                  value={discount}
+                                  onChange={(e) => setDiscount(e.target.value)}
+                                />
               </div>
             </div>
 

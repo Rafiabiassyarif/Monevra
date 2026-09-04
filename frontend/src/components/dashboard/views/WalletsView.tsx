@@ -5,6 +5,7 @@ import { Wallet as WalletIcon, Plus, CreditCard, Building2, Smartphone, Pencil, 
 import { Wallet } from '../../../types';
 import { useLanguage } from '../../../context/LanguageContext';
 import { formatCurrency } from '../../../lib/format';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../../lib/utils';
 
 import { convertToBase, convertFromBase } from '../../../lib/exchangeRates';
 
@@ -330,6 +331,8 @@ function AddWalletModal({ onClose, walletToEdit }: { onClose: () => void, wallet
             <input
               type="number"
               step="0.01"
+              onKeyDown={blockNonNumericKey}
+              onPaste={sanitizeNumericPaste}
               className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50 transition-colors"
               placeholder="0"
               value={formData.initialBalance}

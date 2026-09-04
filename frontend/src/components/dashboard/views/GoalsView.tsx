@@ -5,6 +5,7 @@ import { useLanguage } from '../../../context/LanguageContext';
 import { Target, Plus, Pencil, Trash, X, Trophy } from 'lucide-react';
 import { Goal } from '../../../types';
 import { formatCurrency } from '../../../lib/format';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../../lib/utils';
 
 import { convertToBase, convertFromBase } from '../../../lib/exchangeRates';
 
@@ -219,6 +220,8 @@ function GoalModal({ onClose, goalToEdit }: { onClose: () => void, goalToEdit?: 
               type="number"
               required
               step="0.01"
+              onKeyDown={blockNonNumericKey}
+              onPaste={sanitizeNumericPaste}
               className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50"
               placeholder="0"
               value={formData.targetAmount}
@@ -232,6 +235,8 @@ function GoalModal({ onClose, goalToEdit }: { onClose: () => void, goalToEdit?: 
               <input
                 type="number"
                 step="0.01"
+                onKeyDown={blockNonNumericKey}
+                onPaste={sanitizeNumericPaste}
                 className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-brand-500/50"
                 placeholder="0"
                 value={formData.currentAmount}

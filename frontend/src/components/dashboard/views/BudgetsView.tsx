@@ -5,6 +5,7 @@ import { useFinance } from '../../../context/FinanceContext';
 import { Target, Plus, Pencil, Trash, X, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Budget } from '../../../types';
 import { formatCurrency } from '../../../lib/format';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../../lib/utils';
 
 import { convertToBase, convertFromBase } from '../../../lib/exchangeRates';
 
@@ -290,9 +291,11 @@ function BudgetModal({ onClose, budgetToEdit }: { onClose: () => void, budgetToE
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">{profile.currency || 'IDR'}</span>
                 <input
                   type="number"
-                  step="0.01"
                   min="0"
+                  step="0.01"
                   required
+                  onKeyDown={blockNonNumericKey}
+                  onPaste={sanitizeNumericPaste}
                   className="w-full bg-bg-dark border border-border-dark rounded-xl pl-14 pr-4 py-3.5 text-white focus:outline-none focus:border-brand-500/50 transition-all font-bold text-lg hover:border-slate-300/30"
                   placeholder="0"
                   value={formData.limit}

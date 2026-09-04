@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from "../../context/LanguageContext";
 import { X } from 'lucide-react';
 import { Transaction, Wallet, Budget } from '../../types';
+import { blockNonNumericKey, sanitizeNumericPaste } from '../../lib/utils';
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -76,7 +77,7 @@ export function AdminTransactionModal({
             </FormField>
           </div>
           <FormField label={t('custom.txFormAmount')}>
-            <input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
+            <input type="number" step="0.01" onKeyDown={blockNonNumericKey} onPaste={sanitizeNumericPaste} value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
           <FormField label={t('custom.txFormWallet')}>
             <select value={form.wallet} onChange={e => setForm({ ...form, wallet: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required>
@@ -152,7 +153,7 @@ export function AdminWalletModal({
             </select>
           </FormField>
           <FormField label={t('custom.walletFormBalance')}>
-            <input type="number" step="0.01" value={form.balance} onChange={e => setForm({ ...form, balance: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
+            <input type="number" step="0.01" onKeyDown={blockNonNumericKey} onPaste={sanitizeNumericPaste} value={form.balance} onChange={e => setForm({ ...form, balance: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
           <FormField label={t('custom.walletFormAccount')}>
             <input value={form.accountNumber} onChange={e => setForm({ ...form, accountNumber: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" />
@@ -213,7 +214,7 @@ export function AdminBudgetModal({
             <input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
           <FormField label={t('custom.budgetLimitLabel')}>
-            <input type="number" step="0.01" value={form.limit} onChange={e => setForm({ ...form, limit: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
+            <input type="number" step="0.01" onKeyDown={blockNonNumericKey} onPaste={sanitizeNumericPaste} value={form.limit} onChange={e => setForm({ ...form, limit: e.target.value })} className="w-full bg-surface-dark border border-white/10 rounded-xl px-4 py-2 text-slate-200" required />
           </FormField>
         </div>
         <button disabled={saving} className="btn-admin-premium w-full disabled:opacity-60 disabled:cursor-not-allowed mt-6">
