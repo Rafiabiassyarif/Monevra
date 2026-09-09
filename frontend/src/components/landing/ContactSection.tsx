@@ -46,13 +46,13 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" className="py-32 relative z-10 overflow-hidden">
+    <section id="contact" className="py-16 md:py-32 relative z-10 overflow-hidden">
       {/* Background glow effects */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-brand-500/10 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 relative">
-        <div className="text-center mb-20">
+        <div className="text-center mb-12 md:mb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

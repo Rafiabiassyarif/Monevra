@@ -40,10 +40,10 @@ export default function AdvancedFeaturesSection() {
   ];
 
   return (
-    <section className="py-32 relative z-10">
+    <section className="py-16 md:py-32 relative z-10">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24">
         
-        <div className="mb-16 md:flex justify-between items-end gap-10">
+        <div className="mb-12 md:mb-16 md:flex justify-between items-end gap-10">
           <div className="max-w-2xl">
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}

@@ -267,7 +267,7 @@ export default function SettingsView() {
                       <input 
                         type="tel" 
                         value={profile.phone || ''}
-                        onChange={e => setProfile({...profile, phone: e.target.value})}
+                        onChange={e => setProfile({...profile, phone: e.target.value.replace(/[^0-9+]/g, '')})}
                         placeholder="+62 812-XXXX-XXXX"
                         className="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500/50 transition-all shadow-inner"
                       />

@@ -36,7 +36,7 @@ export default function DashboardPreviewSection() {
   ];
 
   return (
-    <section id="preview" className="py-32 relative z-10 overflow-hidden">
+    <section id="preview" className="py-16 md:py-32 relative z-10 overflow-hidden">
       {/* Decorative Gradients */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-600/10 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent-600/10 blur-[120px] rounded-full pointer-events-none" />
@@ -44,7 +44,7 @@ export default function DashboardPreviewSection() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24">
 
-        <div className="text-center mb-16 relative z-10">
+        <div className="text-center mb-12 md:mb-16 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -195,7 +195,7 @@ export default function DashboardPreviewSection() {
 
                 {/* Custom Legend */}
                 <div className="mt-6 space-y-3">
-                  {chartCategoryData.slice(0, 4).map((cat, i) => (
+                  {chartCategoryData.map((cat, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full shrink-0 shadow-lg" style={{ backgroundColor: COLORS[i % COLORS.length] }} />

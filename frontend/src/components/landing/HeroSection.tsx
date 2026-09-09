@@ -7,10 +7,10 @@ import { useLanguage } from '../../context/LanguageContext';
 
 export default function HeroSection() {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   return (
-    <section className="relative flex flex-col items-center text-center pt-32 pb-40 z-10">
+    <section className="relative flex flex-col items-center text-center pt-24 pb-20 md:pt-32 md:pb-40 z-10">
       {/* Decorative Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-500/20 blur-[150px] rounded-full pointer-events-none" />
       
@@ -32,7 +32,11 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-        className="font-display text-5xl md:text-7xl lg:text-[6.5rem] font-extrabold tracking-tight leading-[1.05] mb-8 max-w-5xl text-white"
+        className={`font-display font-extrabold tracking-tight leading-[1.05] mb-8 max-w-5xl text-white ${
+          language === 'id' 
+            ? 'text-4xl md:text-6xl lg:text-[5rem]' 
+            : 'text-5xl md:text-7xl lg:text-[6.5rem]'
+        }`}
       >
         {t('hero.title1')}<br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-accent-400 to-brand-300 animate-gradient-x">
@@ -79,7 +83,7 @@ export default function HeroSection() {
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-        className="mt-32 w-full max-w-6xl mx-auto relative perspective-1000 hidden md:block h-[560px]"
+        className="mt-32 w-full max-w-6xl mx-auto relative perspective-1000 hidden lg:block h-[560px]"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 to-transparent blur-3xl -z-10 rounded-full pointer-events-none" />
 

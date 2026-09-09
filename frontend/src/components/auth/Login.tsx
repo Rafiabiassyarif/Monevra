@@ -3,7 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import AuthLayout from './AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { Mail, Lock, ArrowRight, Loader2, Github } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, Github, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import PuzzleCaptcha from './PuzzleCaptcha';
 import { motion } from 'motion/react';
 
@@ -20,6 +20,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showBanner, setShowBanner] = useState(justRegistered);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -93,7 +94,7 @@ export default function Login() {
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
         {error && (
           <motion.div variants={itemVariants} className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-start gap-3">
-            <div className="mt-0.5">⚠️</div>
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>{error}</div>
           </motion.div>
         )}
@@ -133,27 +134,34 @@ export default function Login() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <div className="flex items-center justify-end mb-2">
-              <Link to="/forgot-password" className="text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors">
-                {t('auth.forgotPassword')}
-              </Link>
-            </div>
-            <div className="relative group">
+            <div className="relative group mb-3">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                 <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-brand-400 transition-colors" />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 pr-12 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
                 placeholder={t('auth.passwordPlaceholder')}
               />
               <label htmlFor="password" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
                 {t('auth.passwordLabel')}
               </label>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-white transition-colors z-10"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="flex items-center justify-end">
+              <Link to="/forgot-password" className="text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors">
+                {t('auth.forgotPassword')}
+              </Link>
             </div>
           </motion.div>
 

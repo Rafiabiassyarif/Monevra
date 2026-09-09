@@ -10,8 +10,8 @@ import {
 export default function FeaturesSection() {
   const { t } = useLanguage();
   return (
-    <section id="features" className="py-32 relative z-10">
-      <div className="text-center mb-20">
+    <section id="features" className="py-16 md:py-32 relative z-10">
+      <div className="text-center mb-12 md:mb-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -40,7 +40,7 @@ export default function FeaturesSection() {
       </div>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
 
         {/* Large Feature 1 */}
         <motion.div
@@ -48,7 +48,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="lg:col-span-2 lg:row-span-2 rounded-[2.5rem] bg-gradient-to-br from-surface-dark to-bg-dark border border-border-dark p-8 flex flex-col group overflow-hidden relative shadow-xl hover:shadow-brand-500/10 hover:border-brand-500/30 transition-all duration-500"
+          className="md:col-span-2 lg:col-span-2 lg:row-span-2 rounded-[2.5rem] bg-gradient-to-br from-surface-dark to-bg-dark border border-border-dark p-8 flex flex-col group overflow-hidden relative shadow-xl hover:shadow-brand-500/10 hover:border-brand-500/30 transition-all duration-500"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-brand-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="flex-1 relative z-10">
@@ -74,10 +74,10 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="lg:col-span-2 rounded-[2.5rem] bg-surface-dark border border-border-dark p-8 flex flex-col justify-center group relative overflow-hidden shadow-xl hover:shadow-accent-500/10 hover:border-accent-500/30 transition-all duration-500"
+          className="md:col-span-2 lg:col-span-2 rounded-[2.5rem] bg-surface-dark border border-border-dark p-8 flex flex-col justify-center group relative overflow-hidden shadow-xl hover:shadow-accent-500/10 hover:border-accent-500/30 transition-all duration-500"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4 group-hover:bg-accent-500/20 transition-colors duration-500"></div>
-          <div className="relative z-10 flex items-start gap-6">
+          <div className="relative z-10 flex flex-col sm:flex-row items-start gap-6">
             <div className="w-16 h-16 rounded-2xl bg-accent-500/20 text-accent-400 flex items-center justify-center shrink-0 border border-accent-500/20 group-hover:rotate-12 transition-transform duration-500">
               <Wallet className="w-8 h-8" />
             </div>

@@ -93,7 +93,7 @@ const NODE_BIN =
         ? 'D:\\NVM\\nvm\\v22.12.0\\node.exe' // node modern yang dikenal di mesin ini (dev)
         : 'node')); // non-Windows dev: andalkan PATH
 
-const DESIRED_PORT = 3001; // sama dengan .env dev, biar konsisten
+const DESIRED_PORT = 3000; // port dev yang terdaftar di OAuth Google/GitHub (redirect_uri konsisten dgn web)
 let backendProcess = null;
 let mainWindow = null;
 

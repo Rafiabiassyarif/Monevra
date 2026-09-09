@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import AuthLayout from './AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { Mail, Lock, User, ArrowRight, Loader2, Github } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, Github, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import PuzzleCaptcha from './PuzzleCaptcha';
 import { motion } from 'motion/react';
 
@@ -17,6 +17,8 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { registerWithEmail, user, isAdmin } = useAuth();
 
@@ -119,7 +121,7 @@ export default function Register() {
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
         {error && (
           <motion.div variants={itemVariants} className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-start gap-3">
-            <div className="mt-0.5">⚠️</div>
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>{error}</div>
           </motion.div>
         )}
@@ -167,21 +169,27 @@ export default function Register() {
                 <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-brand-400 transition-colors" />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 pr-12 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
                 placeholder={t('auth.passwordPlaceholder')}
                 minLength={6}
               />
               <label htmlFor="password" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
                 {t('auth.passwordLabel')}
               </label>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-white transition-colors z-10"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
             
-            {/* Password Strength Indicator */}
             {password.length > 0 && (
               <div className="px-1 flex items-center justify-between">
                 <div className="flex-1 flex gap-1 h-1.5 rounded-full overflow-hidden bg-slate-700/50">
@@ -198,25 +206,37 @@ export default function Register() {
             )}
           </motion.div>
 
-          {/* Confirm Password */}
           <motion.div variants={itemVariants}>
             <div className="relative group mb-2">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                 <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-brand-400 transition-colors" />
               </div>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="peer block w-full appearance-none rounded-2xl border border-form-border bg-form-bg pl-11 px-4 pt-5 pb-2 text-white focus:border-brand-500 focus:bg-form-hover focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all duration-300 hover:border-form-border sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner"
+                className={`peer block w-full appearance-none rounded-2xl border bg-form-bg pl-11 pr-12 pt-5 pb-2 text-white focus:outline-none focus:ring-1 transition-all duration-300 sm:text-sm placeholder-transparent backdrop-blur-xl shadow-inner [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${
+                  confirmPassword.length > 0 && confirmPassword !== password 
+                    ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500 bg-red-500/5' 
+                    : 'border-form-border hover:border-form-border focus:border-brand-500 focus:ring-brand-500 focus:bg-form-hover'
+                }`}
                 placeholder={t('auth.confirmPass')}
                 minLength={6}
               />
-              <label htmlFor="confirmPassword" className="absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-brand-400 cursor-text">
+              <label htmlFor="confirmPassword" className={`absolute text-sm duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-11 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text ${
+                confirmPassword.length > 0 && confirmPassword !== password ? 'text-red-400' : 'text-slate-500 peer-focus:text-brand-400'
+              }`}>
                 {t('auth.confirmPass')}
               </label>
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-white transition-colors z-10"
+              >
+                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
             {confirmPassword.length > 0 && password !== confirmPassword && (
               <p className="text-xs text-red-400 px-1 mt-1">{t('auth.passMismatch')}</p>

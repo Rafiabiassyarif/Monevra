@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          <div className="lg:col-span-2">
+          <div className="md:col-span-2 lg:col-span-2">
             <div className="flex items-center mb-6">
               <div className="relative -mr-3">
                 <img src="/logo-monevra.png" alt="Logo" className="h-12 md:h-14 w-auto object-contain relative z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]" />
@@ -53,7 +53,7 @@ export default function Footer() {
             <p className="text-slate-400 mb-8 max-w-sm leading-relaxed text-base">
               {t('footer.desc')}
             </p>
-            <div className="flex gap-4">
+            <div className="hidden gap-4">
               {[Twitter, Github, Linkedin, Instagram].map((Icon, i) => (
                 <a key={i} href="#" className="w-12 h-12 rounded-2xl bg-surface-dark hover:bg-surface-hover flex items-center justify-center text-slate-400 hover:text-white hover:-translate-y-1 transition-all border border-border-dark shadow-lg">
                   <Icon className="w-5 h-5" />

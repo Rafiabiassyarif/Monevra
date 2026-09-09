@@ -241,16 +241,20 @@ export default function TransactionModal({ onClose, txToEdit }: { onClose: () =>
             </div>
 
             <div className="flex items-center gap-2">
-              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleScanReceipt} className="hidden" />
-              <button
-                type="button"
-                onClick={() => setIsCameraOpen(true)}
-                disabled={isScanning || !!txToEdit}
-                className="w-9 h-9 rounded-full bg-brand-500/15 flex items-center justify-center text-brand-400 hover:bg-brand-500/25 hover:text-brand-300 transition-colors shadow-lg shadow-brand-500/10 disabled:opacity-50"
-                title={t('custom.modalScanAI')}
-              >
-                {isScanning ? <div className="w-4 h-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" /> : <Scan size={18} />}
-              </button>
+              {!txToEdit && (
+                <>
+                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleScanReceipt} className="hidden" />
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    disabled={isScanning}
+                    className="w-9 h-9 rounded-full bg-brand-500/15 flex items-center justify-center text-brand-400 hover:bg-brand-500/25 hover:text-brand-300 transition-colors shadow-lg shadow-brand-500/10 disabled:opacity-50"
+                    title={t('custom.modalScanAI')}
+                  >
+                    {isScanning ? <div className="w-4 h-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" /> : <Scan size={18} />}
+                  </button>
+                </>
+              )}
               <button onClick={onClose} className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center hover:bg-border-dark text-slate-400 hover:text-white transition-colors">
                 <X size={18} />
               </button>
