@@ -85,13 +85,15 @@ function prepareBackendRuntime() {
   return dest;
 }
 
+// Node runtime untuk spawn backend.
+//  - Windows packaged: node.exe di-bundle via extraResources (ABI cocok utk native modules)
+//  - macOS/Linux packaged: andalkan node dari PATH (user/CI harus install Node — sama spt dev)
+//  - Override eksplisit via env MONEVRA_NODE (dev)
 const NODE_BIN =
   process.env.MONEVRA_NODE || // eksplisit (dev)
-  (isPackaged
+  (isPackaged && process.platform === 'win32'
     ? path.join(process.resourcesPath, 'node.exe') // node di-bundle via extraResources
-    : (process.platform === 'win32'
-        ? 'D:\\NVM\\nvm\\v22.12.0\\node.exe' // node modern yang dikenal di mesin ini (dev)
-        : 'node')); // non-Windows dev: andalkan PATH
+    : 'node'); // non-Windows packaged & semua dev: andalkan PATH
 
 const DESIRED_PORT = 3000; // port dev yang terdaftar di OAuth Google/GitHub (redirect_uri konsisten dgn web)
 let backendProcess = null;
