@@ -86,14 +86,41 @@ function prepareBackendRuntime() {
 }
 
 // Node runtime untuk spawn backend.
-//  - Windows packaged: node.exe di-bundle via extraResources (ABI cocok utk native modules)
-//  - macOS/Linux packaged: andalkan node dari PATH (user/CI harus install Node — sama spt dev)
-//  - Override eksplisit via env MONEVRA_NODE (dev)
-const NODE_BIN =
-  process.env.MONEVRA_NODE || // eksplisit (dev)
-  (isPackaged && process.platform === 'win32'
-    ? path.join(process.resourcesPath, 'node.exe') // node di-bundle via extraResources
-    : 'node'); // non-Windows packaged & semua dev: andalkan PATH
+//  - Override eksplisit via env MONEVRA_NODE (dev/CI)
+//  - Windows packaged : node.exe di-bundle via win.extraResources (path absolut)
+//  - macOS/Linux packaged: TIDAK boleh andalkan PATH — app yang di-launch dari
+//    Finder/LaunchServices tidak mewarisi PATH terminal (Homebrew di /opt/homebrew/bin
+//    tak terlihat) → spawn('node') = ENOENT. Cari path ABSOLUT di lokasi umum;
+//    kalau binary node di-bundle (resources/node) pakai itu dulu.
+// LAZY (dipanggil setelah app ready) — app.getPath() bisa gagal di module scope.
+function resolveNodeBin() {
+  if (process.env.MONEVRA_NODE) return process.env.MONEVRA_NODE;
+  if (isPackaged && process.platform === 'win32') {
+    return path.join(process.resourcesPath, 'node.exe');
+  }
+  if (isPackaged) {
+    const bundled = path.join(process.resourcesPath, 'node');
+    if (fs.existsSync(bundled)) return bundled;
+    const candidates = [
+      '/opt/homebrew/bin/node', // Homebrew (Apple Silicon)
+      '/usr/local/bin/node',    // Homebrew (Intel) / installer resmi nodejs.org
+      '/opt/local/bin/node',    // MacPorts
+      '/usr/bin/node',          // sistem/linuxbrew
+    ];
+    // nvm: ~/.nvm/versions/node/<versi>/bin/node — pakai versi tertinggi
+    try {
+      const nvmDir = path.join(app.getPath('home'), '.nvm', 'versions', 'node');
+      if (fs.existsSync(nvmDir)) {
+        const vers = fs.readdirSync(nvmDir).filter((v) => /^v\d/.test(v)).sort().reverse();
+        for (const v of vers) candidates.unshift(path.join(nvmDir, v, 'bin', 'node'));
+      }
+    } catch {}
+    for (const c of candidates) {
+      if (fs.existsSync(c)) return c;
+    }
+  }
+  return 'node'; // dev, atau fallback terakhir (PATH)
+}
 
 const DESIRED_PORT = 3000; // port dev yang terdaftar di OAuth Google/GitHub (redirect_uri konsisten dgn web)
 let backendProcess = null;
@@ -159,9 +186,10 @@ async function startLocalBackend() {
   log('startLocalBackend: menyiapkan backend runtime...');
   const backendDir = prepareBackendRuntime();
   log('startLocalBackend: backendDir=' + backendDir);
-  log('startLocalBackend: spawn node=' + NODE_BIN);
+  const nodeBin = resolveNodeBin();
+  log('startLocalBackend: spawn node=' + nodeBin);
 
-  backendProcess = spawn(NODE_BIN, ['server.js'], {
+  backendProcess = spawn(nodeBin, ['server.js'], {
     cwd: backendDir,
     env: {
       ...process.env,

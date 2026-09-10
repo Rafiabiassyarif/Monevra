@@ -142,12 +142,53 @@ meng-generate otomatis).
 
 | Gejala | Penyebab | Fix |
 |--------|----------|-----|
+| **`spawn node ENOENT`** saat buka `.app`/`.dmg` | app dibuka dari Finder → tidak mewarisi PATH terminal; `node` Homebrew (`/opt/homebrew/bin`) tak terlihat | versi terbaru `main.js` sudah cari path absolut otomatis (`/opt/homebrew/bin/node`, `/usr/local/bin/node`, nvm). Pastikan Node terinstall: `brew install node`. Kalau masih error, jalankan app dari terminal: `/Applications/Monevra.app/Contents/MacOS/Monevra` (PATH ikut terbawa) |
 | "frontend/dist belum ada" | belum build frontend | `node scripts/setup.mjs` |
 | "Cannot find module 'express'" | vendor/_deps belum dibuat | `node scripts/setup.mjs` |
 | "JWT_SECRET wajib di-set" | backend/.env kosong/tidak ada | cek `backend/.env`, jalankan setup |
 | "Backend gagal start" (dialog) | lihat `main.log` | baca log di userData |
 | Error saat `npm run build:mac` soal `node.exe` | konfigurasi lama | pastikan `node.exe` hanya di blok `win:` (sudah difix) |
 | Buka `.app`/`.dmg` diblokir Gatekeeper | unsigned | klik kanan → Open, atau `xattr -cr /Applications/Monevra.app` |
+
+### Kenapa `spawn node ENOENT` (detail)
+
+`main.js` menjalankan backend dengan **binary Node** (`spawn(node, ['server.js'])`).
+Di macOS, app yang dibuka lewat **Finder/`.dmg`** dijalankan oleh LaunchServices
+dengan environment minimal — **PATH terminal tidak diwarisi**, sehingga
+`/opt/homebrew/bin` (lokasi Node Homebrew) tidak terlihat → `spawn('node')` gagal
+`ENOENT`.
+
+Solusi di `main.js` (`resolveNodeBin()`): cari Node di **path absolut** yang umum
+dipakai macOS, tidak bergantung PATH:
+
+```
+1. resources/node            ← kalau kamu bundle binary Node (opsional)
+2. ~/.nvm/versions/node/*/bin/node   ← nvm (versi tertinggi)
+3. /opt/homebrew/bin/node    ← Homebrew Apple Silicon
+4. /usr/local/bin/node       ← Homebrew Intel / installer resmi nodejs.org
+5. /opt/local/bin/node       ← MacPorts
+6. /usr/bin/node             ← sistem
+7. 'node'                    ← fallback terakhir (PATH)
+```
+
+**Cek Node kamu terinstall di mana:**
+```bash
+which node        # contoh: /opt/homebrew/bin/node
+node --version
+```
+
+**Kalau mau app jalan TANPA Node terinstall di mesin target** (mis. dibagikan ke
+orang lain): bundle binary Node ke dalam app. Unduh
+`node-vXX-darwin-arm64.tar.gz` dari nodejs.org, ekstrak `bin/node` ke
+`electron/node` (arm64) / `electron/node-x64`, lalu tambahkan ke `mac.extraResources`:
+
+```yaml
+mac:
+  extraResources:
+    - from: node            # arm64
+      to: node
+```
+`resolveNodeBin()` akan memakai `resources/node` lebih dulu.
 
 ---
 

@@ -58,8 +58,10 @@ win:
         - x64
   icon: assets/icon.ico
   executableName: Monevra
-  # Runtime node.exe khusus Windows (spawn backend). Tidak disertakan di macOS/Linux
-  # (di sana pakai `node` dari PATH — lihat NODE_BIN di main.js).
+  # Runtime node.exe khusus Windows (spawn backend, path absolut).
+  # macOS pakai `resolveNodeBin()` di main.js: cari node di path absolut umum
+  # (/opt/homebrew/bin, /usr/local/bin, nvm) — TIDAK andalkan PATH (app yang dibuka
+  # dari Finder tidak mewarisi PATH terminal → spawn ENOENT).
   extraResources:
     - from: node.exe
       to: node.exe
