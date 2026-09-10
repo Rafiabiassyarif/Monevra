@@ -215,11 +215,14 @@ pm2 reload monevra        # restart tanpa downtime
 | Gejala | Penyebab | Fix |
 |---|---|---|
 | `pm2` status errored, log: "JWT_SECRET tidak valid" | secret kosong/lemah | set `JWT_SECRET` (openssl rand -hex 48) |
+| **`Error: ENOENT ... stat '*/frontend/dist/index.html'`** berulang di `pm2 logs` | frontend belum di-build di server (`frontend/dist` tidak ada) | `cd frontend && npm install && npm run build` lalu `pm2 reload monevra`. Cek: `ls frontend/dist/index.html` |
 | `/api/health` balas 500 | DB tidak connect | cek `DB_USER/DB_PASSWORD`, `sudo systemctl status mysql` |
 | Halaman kosong / 404 di browser | `frontend/dist` belum di-build | `cd frontend && npm run build` |
+| Halaman balas **503 "Frontend belum di-build"** | sama seperti di atas (pesan barunya) | `cd frontend && npm install && npm run build` → `pm2 reload monevra` |
 | Login sosial gagal "redirect_uri_mismatch" | redirect URI belum didaftarkan | tambah `https://api.domainkamu.com/auth/callback/google` di console OAuth |
 | App desktop bilang "tidak merespons" | URL app ≠ URL server / CORS | cek `APP_URL` di `.env` = domain app, app pakai `https` |
 | CORS error di browser | `APP_URL` tidak memuat domain pemanggil | tambahkan domain ke `APP_URL` (pisah koma) |
+| Error ENOENT menyebut path aneh (`~/frontend/...`) | folder project tidak lengkap — `backend/` & `frontend/` harus bersebelahan | pastikan struktur: `~/Monevra/backend/server.js` + `~/Monevra/frontend/dist/` |
 
 ---
 

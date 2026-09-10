@@ -4,6 +4,18 @@ import fs from 'fs';
 
 const isWindows = process.platform === 'win32';
 
+// Preflight: backend menyajikan build React dari frontend/dist (folder ini TIDAK
+// ada di git). Tanpa build, halaman web tidak terbuka — ingatkan di awal, jangan
+// biarkan user menemukannya sendiri lewat error ENOENT berulang di log.
+const frontendIndex = path.resolve('frontend', 'dist', 'index.html');
+if (!fs.existsSync(frontendIndex)) {
+  console.warn(
+    '\x1b[33m⚠️  [MONEVRA] frontend/dist belum di-build — halaman web tidak akan terbuka.\n' +
+    '   Perbaiki:  cd frontend && npm install && npm run build\n' +
+    '   Endpoint /api/* tetap berfungsi.\x1b[0m'
+  );
+}
+
 // Tentukan path ke python executable di dalam virtual environment
 const pythonExecutable = path.resolve(
   isWindows 

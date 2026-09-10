@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import mysql from 'mysql2/promise';
@@ -1240,15 +1241,45 @@ app.use((err, req, res, next) => {
 });
 
 // --- Serve React Frontend ---
-// This serves the built React app from the frontend/dist folder
+// Menyajikan build React dari folder frontend/dist (relatif terhadap backend/).
+// PENTING: folder frontend/dist TIDAK ada di git — harus di-build manual di server.
+// Kalau lupa di-build, sebelumnya setiap request gagal dgn stack ENOENT berulang
+// yang membingungkan. Sekarang dicek sekali saat start → pesan JELAS, dan halaman
+// membalas 503 (bukan crash), sementara /api/* tetap berfungsi.
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
-app.use(express.static(frontendDistPath));
+const frontendIndexPath = path.join(frontendDistPath, 'index.html');
+const hasFrontendBuild = fs.existsSync(frontendIndexPath);
 
-// Fallback for React Router (SPA)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendDistPath, 'index.html'));
-});
+if (hasFrontendBuild) {
+  app.use(express.static(frontendDistPath));
+  // Fallback for React Router (SPA)
+  app.get('*', (req, res) => {
+    res.sendFile(frontendIndexPath);
+  });
+  console.log(`📦 Frontend (SPA) disajikan dari: ${frontendDistPath}`);
+} else {
+  console.warn(
+    '⚠️  FRONTEND BELUM DI-BUILD — file tidak ditemukan:\n' +
+    `      ${frontendIndexPath}\n` +
+    '    Halaman web (SPA) tidak bisa dibuka. Endpoint /api/* tetap berfungsi.\n' +
+    '    Perbaiki di server:\n' +
+    '      cd frontend && npm install && npm run build\n' +
+    '    lalu restart proses:  pm2 reload monevra'
+  );
+  app.get('*', (req, res) => {
+    res.status(503).type('html').send(
+      '<!doctype html><meta charset="utf-8"><title>Monevra — frontend belum di-build</title>' +
+      '<body style="font-family:system-ui;max-width:680px;margin:60px auto;line-height:1.6">' +
+      '<h1>Frontend belum di-build</h1>' +
+      `<p>File <code>${frontendIndexPath}</code> tidak ditemukan.</p>` +
+      '<p>Di server, jalankan:</p>' +
+      '<pre style="background:#f4f4f4;padding:12px;border-radius:6px">cd frontend\nnpm install\nnpm run build</pre>' +
+      '<p>Lalu restart: <code>pm2 reload monevra</code></p>' +
+      '<p>Endpoint API (<code>/api/*</code>) tetap berfungsi.</p>'
+    );
+  });
+}
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`✅ Monevra API & Frontend running on port ${port}`);
+  console.log(`✅ Monevra API${hasFrontendBuild ? ' & Frontend' : ' (frontend belum di-build)'} running on port ${port}`);
 });
