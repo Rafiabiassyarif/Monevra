@@ -1,0 +1,50 @@
+# =============================================================================
+# Monevra — docker-compose (opsional, jalur Docker)
+#
+# Cara pakai (dari folder deploy/):
+#   cp .env.production.example ../backend/.env    # lalu EDIT
+#   docker compose up -d --build
+#   docker compose logs -f monevra
+#
+# Catatan: DB_HOST di backend/.env harus diubah ke "db" (nama service MySQL),
+# BUKAN 127.0.0.1 — karena app berjalan di container terpisah.
+# =============================================================================
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-ganti_root_password}
+      MYSQL_DATABASE: ${DB_NAME:-monevra}
+      MYSQL_USER: ${DB_USER:-monevra_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ganti_password}
+    volumes:
+      - db_data:/var/lib/mysql
+      # Import skema otomatis saat volume pertama kali dibuat:
+      - ../backend/database/monevra.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-ganti_root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  monevra:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ../backend/.env          # NODE_ENV, JWT_SECRET, APP_URL, dst
+    environment:
+      DB_HOST: db                # override: mengarah ke service MySQL di atas
+      DB_PORT: 3306
+    ports:
+      - "127.0.0.1:3001:3001"    # HANYA localhost -> Nginx di host yang expose ke internet
+    volumes:
+      - ../logs:/app/logs
+
+volumes:
+  db_data:

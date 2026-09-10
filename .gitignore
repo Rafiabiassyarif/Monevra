@@ -3,6 +3,9 @@ dist/
 .env
 *.log
 
+# Log PM2 / runtime server
+logs/
+
 # File test/debug yang bisa berisi API key — jangan commit
 test_gemini.mjs
 test_models.mjs
