@@ -1,0 +1,67 @@
+# Konfigurasi DASAR electron-builder Monevra (dipakai bersama).
+# Jangan dipakai langsung — build lewat salah satu:
+#   electron-builder.yml        → mode LOKAL  (app bawa backend + Node, butuh MySQL)
+#   electron-builder.online.yml → mode ONLINE (app klien ke backend hosting, ringan)
+# Catatan: `extraResources` di electron-builder DIGABUNG (bukan ditimpa) saat extends,
+# jadi resource backend ditaruh di config turunan, bukan di sini.
+appId: com.monevra.desktop
+productName: Monevra
+copyright: Copyright © 2026 Monevra
+
+# File yang masuk ke dalam app.asar (kode Electron saja)
+files:
+  - main.js
+  - preload.js
+  - assets/icon.png
+  - package.json
+
+# Ikon aplikasi
+# Windows: icon.ico | macOS: electron-builder generate .icns dari icon-1024.png
+icon: assets/icon.png
+
+# Target macOS — build WAJIB dijalankan di mesin macOS (electron-builder tidak bisa
+# cross-build dmg dari Windows). Arch: arm64 (Apple Silicon M1/M2/M3) + x64 (Intel).
+mac:
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+    - target: zip
+      arch:
+        - arm64
+        - x64
+  icon: assets/icon-1024.png
+  category: public.app-category.finance
+  darkModeSupport: true
+  artifactName: Monevra-${version}-${arch}.${ext}
+
+# Target Windows
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icon.ico
+  executableName: Monevra
+
+# Installer NSIS
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Monevra
+  artifactName: Monevra-Setup-${version}.${ext}
+  deleteAppDataOnUninstall: false
+
+# Direktori output
+directories:
+  output: release
+
+# Publikasi (auto-update) — kosong dulu, diisi saat server update tersedia
+# publish:
+#   provider: github
+#   owner: Rafiabiassyarif
+#   repo: Monevra

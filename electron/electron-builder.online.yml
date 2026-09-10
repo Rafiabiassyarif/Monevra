@@ -1,0 +1,25 @@
+# Konfigurasi electron-builder Monevra — MODE ONLINE (app klien ke backend hosting)
+#
+# App TIDAK membawa backend/Node/frontend — ia hanya "shell" yang memuat URL
+# backend online. Installer jauh lebih kecil, dan mesin user TIDAK perlu MySQL.
+#
+# Pakai:
+#   npm run build:mac:online     # macOS (.dmg/.zip)
+#   npm run build:online         # Windows (.exe)
+#
+# WAJIB isi URL backend online sebelum build, lewat env MONEVRA_BACKEND_URL:
+#   MONEVRA_BACKEND_URL="https://api.domainkamu.com" npm run build:mac:online
+# (atau isi belakangan di file config.json app — lihat HOSTING.md)
+extends: ./electron-builder.base.yml
+
+# Output terpisah supaya tidak menimpa build mode lokal
+directories:
+  output: release-online
+
+# Nama artefak dibedakan
+mac:
+  artifactName: Monevra-Online-${version}-${arch}.${ext}
+nsis:
+  artifactName: Monevra-Online-Setup-${version}.${ext}
+
+# TIDAK ada extraResources → app tidak membawa backend, Node, atau frontend build.

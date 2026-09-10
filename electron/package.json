@@ -14,7 +14,9 @@
     "build:mac": "npm run build:frontend && electron-builder --mac",
     "build:mac:arm64": "npm run build:frontend && electron-builder --mac --arm64",
     "build:mac:x64": "npm run build:frontend && electron-builder --mac --x64",
-    "dist:mac": "electron-builder --mac dmg zip"
+    "dist:mac": "electron-builder --mac dmg zip",
+    "build:online": "electron-builder --win nsis -c electron-builder.online.yml",
+    "build:mac:online": "electron-builder --mac -c electron-builder.online.yml"
   },
   "dependencies": {
     "electron-updater": "^6.8.9"

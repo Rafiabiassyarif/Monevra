@@ -18,17 +18,20 @@ try {
 // Monevra Desktop — main process
 //
 // Arsitektur: app desktop adalah KLIEN ke backend.
-//  - Mode PRODUKSI (default): spawn backend Express lokal (node server.js)
-//    dari folder backend/ Monevra, lalu window load dari http://localhost:PORT.
-//    Backend itu sendiri yang menyajikan frontend build (frontend/dist).
-//  - Mode DEV: set env MONEVRA_URL=http://localhost:3000 (vite) untuk
-//    development hot-reload — backend/vite dijalankan manual dari terminal.
-//
-// Nanti saat backend online: tinggal set MONEVRA_URL=https://api.domain.com
-// (atau masukkan ke konfigurasi) — app jadi klien ke server, tanpa spawn lokal.
+//  - Mode LOKAL (default): spawn backend Express lokal (node server.js) dari
+//    folder backend/, lalu load http://localhost:PORT. Backend menyajikan
+//    frontend build (frontend/dist). Butuh MySQL + Node di komputer ini.
+//  - Mode ONLINE (backend sudah hosting): app langsung load URL backend online —
+//    TANPA spawn, TANPA MySQL, TANPA Node lokal. Dipilih dari (urutan prioritas):
+//      a) env MONEVRA_URL              (dev / override eksplisit)
+//      b) config.json di userData      → {"backendUrl":"https://..."}  (tanpa rebuild)
+//      c) konstanta ONLINE_BACKEND_URL (diisi saat build)
+//  - Mode DEV: env MONEVRA_URL=http://localhost:3000 (vite) utk hot-reload.
 // ---------------------------------------------------------------------------
 
-const IS_DEV = !!process.env.MONEVRA_URL;
+// Diisi saat build utk menjadikan app klien ke backend online (opsional).
+// Nilai placeholdernya dibiarkan kosong = app jalan sebagai backend lokal.
+const ONLINE_BACKEND_URL = process.env.MONEVRA_BACKEND_URL || '';
 const isPackaged = app.isPackaged;
 
 // Resolve lokasi backend & frontend-build.
@@ -241,19 +244,62 @@ async function startLocalBackend() {
   return backendUrl;
 }
 
+// --- mode backend: ONLINE (hosting) vs LOKAL (spawn) -----------------------------
+// URL backend online dari (prioritas): env MONEVRA_URL > config.json > konstanta build.
+function resolveOnlineBackendUrl() {
+  if (process.env.MONEVRA_URL) return process.env.MONEVRA_URL.replace(/\/+$/, '');
+  try {
+    const cfgPath = path.join(app.getPath('userData'), 'config.json');
+    if (fs.existsSync(cfgPath)) {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      if (cfg && typeof cfg.backendUrl === 'string' && /^https?:\/\//.test(cfg.backendUrl)) {
+        return cfg.backendUrl.replace(/\/+$/, '');
+      }
+    }
+  } catch (e) {
+    log('[config] gagal baca config.json: ' + e.message);
+  }
+  return ONLINE_BACKEND_URL ? ONLINE_BACKEND_URL.replace(/\/+$/, '') : null;
+}
+
+// Tulis contoh config.json saat pertama jalan → user bisa ganti URL backend
+// tanpa rebuild app.
+function ensureConfigTemplate() {
+  try {
+    const cfgPath = path.join(app.getPath('userData'), 'config.json');
+    if (!fs.existsSync(cfgPath)) {
+      fs.writeFileSync(cfgPath, JSON.stringify({
+        backendUrl: ONLINE_BACKEND_URL || '',
+        _catatan: 'Isi backendUrl dengan URL backend Monevra online (mis. https://api.domain.com). ' +
+                  'Biarkan kosong untuk memakai backend lokal (butuh MySQL + Node). Perubahan berlaku setelah app di-restart.',
+      }, null, 2));
+      log('[config] template config.json dibuat: ' + cfgPath);
+    }
+  } catch (e) {
+    log('[config] gagal tulis template: ' + e.message);
+  }
+}
+
 // --- jendela utama --------------------------------------------------------------
 async function createWindow() {
   let url;
-  if (IS_DEV) {
-    url = process.env.MONEVRA_URL;
+  const onlineUrl = resolveOnlineBackendUrl();
+  if (onlineUrl) {
+    // Mode ONLINE: app klien ke backend hosting — tanpa spawn, MySQL, atau Node lokal.
+    log('createWindow: mode ONLINE -> ' + onlineUrl);
+    url = onlineUrl;
   } else {
+    // Mode LOKAL: spawn backend Express (butuh MySQL + Node di komputer ini).
+    log('createWindow: mode LOKAL (spawn backend)');
     try {
       url = await startLocalBackend();
     } catch (err) {
       log('ERROR start backend: ' + (err && err.stack || err));
       dialog.showErrorBox(
         'Monevra — Backend gagal start',
-        `${err.message}\n\nPastikan:\n1. MySQL/Laragon sedang berjalan\n2. Frontend sudah di-build (npm run build di frontend/)\n3. Node.js tersedia`
+        `${err.message}\n\nOpsi A — pakai backend online (tanpa MySQL):\n` +
+        `  isi "backendUrl" di config.json:\n  ${path.join(app.getPath('userData'), 'config.json')}\n\n` +
+        `Opsi B — jalankan backend lokal:\n1. MySQL sedang berjalan\n2. Frontend sudah di-build\n3. Node.js tersedia`
       );
       app.quit();
       return;
@@ -342,6 +388,7 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    ensureConfigTemplate();
     setupAutoUpdate();
     createWindow();
     app.on('activate', () => {

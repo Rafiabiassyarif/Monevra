@@ -1,5 +1,6 @@
 node_modules/
 release/
+release-online/
 dist/
 node.exe
 node-arm64

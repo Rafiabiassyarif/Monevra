@@ -1,5 +1,8 @@
 # Monevra Desktop — Build & Jalankan di macOS
 
+> **Mau app-nya tidak butuh MySQL/Laragon di Mac?** Pakai **mode ONLINE** —
+> app menunjuk ke backend yang di-hosting. Lihat **`HOSTING.md`** di folder ini.
+
 ## PENTING: `.dmg` lama TIDAK memuat perbaikan terbaru
 
 Kalau kamu melihat error **`spawn node ENOENT`** padahal `release/*.dmg` sudah ada,
