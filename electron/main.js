@@ -174,14 +174,42 @@ async function startLocalBackend() {
     windowsHide: true,
   });
 
-  backendProcess.stdout.on('data', (d) => log('[backend] ' + d.toString().trim()));
-  backendProcess.stderr.on('data', (d) => log('[backend-err] ' + d.toString().trim()));
-  backendProcess.on('exit', (code) => {
-    log('[backend] exited with code ' + code);
-    backendProcess = null;
+  // Tangkap error spawn (mis. NODE_BIN tidak ditemukan) — jangan pakai throw di
+  // event handler (tidak tertangkap try/catch, jadi uncaught). Tolak promise-nya.
+  const spawnError = new Promise((_, reject) => {
+    backendProcess.on('error', (err) => {
+      log('startLocalBackend: ERROR spawn node: ' + err.message);
+      reject(new Error(
+        `Gagal menjalankan backend: ${err.message}. ` +
+        (process.platform !== 'win32'
+          ? 'Pastikan Node.js terinstall dan tersedia di PATH (jalankan `node --version`).'
+          : 'Pastikan file node.exe tersedia (masuk via electron/node.exe).')
+      ));
+    });
   });
 
-  await waitForBackend(backendUrl + '/api/health');
+  // Backend keluar SEBELUM health check sukses = error nyata (mis. JWT_SECRET
+  // kosong di produksi, port bentrok, dsb). Tangkap, jangan hang di waitForBackend.
+  const exitedEarly = new Promise((_, reject) => {
+    backendProcess.on('exit', (code) => {
+      log('[backend] exited with code ' + code);
+      backendProcess = null;
+      reject(new Error(
+        `Backend berhenti (exit code ${code}). Lihat log di atas untuk detail. ` +
+        (process.platform !== 'win32' && code !== 0
+          ? 'Kemungkinan JWT_SECRET/DB tidak terkonfigurasi di backend/.env.'
+          : '')
+      ));
+    });
+  });
+
+  backendProcess.stdout.on('data', (d) => log('[backend] ' + d.toString().trim()));
+  backendProcess.stderr.on('data', (d) => log('[backend-err] ' + d.toString().trim()));
+
+  // Ambil salah satu yang terjadi lebih dulu: backend siap (health 200) / spawn error / exit dini
+  const ready = waitForBackend(backendUrl + '/api/health');
+  ready.catch(() => {}); // hindari unhandled rejection kalau spawnError/exitedEarly menang duluan
+  await Promise.race([ready, spawnError, exitedEarly]);
   return backendUrl;
 }
 

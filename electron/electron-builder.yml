@@ -15,16 +15,17 @@ extraResources:
   # Backend Express Monevra — ambil dari vendor/ (staging siap-package)
   # yang SUDAH berisi node_modules. electron-builder mengecualikan node_modules
   # dari extraResources kalau from-nya folder project, jadi kita staging dulu.
+  # Isi vendor/ di-generate oleh `node scripts/setup.mjs` (JANGAN di-commit).
   - from: vendor/backend
     to: backend
     filter:
       - "**/*"
-  # Frontend build (hasil npm run build)
+  # Frontend build (hasil npm run build, di-generate juga oleh setup.mjs)
   - from: ../frontend/dist
     to: frontend/dist
-  # Node.js runtime untuk spawn backend (Windows)
-  - from: node.exe
-    to: node.exe
+  # NOTE: node.exe (runtime backend Windows) TIDAK ditaruh di sini. Itu kamu taruh
+  # di blok `win.extraResources` (khusus Windows). Kalau ditaruh global, build macOS
+  # akan gagal karena mencoba menyalin node.exe (file Windows .exe).
 
 # Ikon aplikasi
 # Windows: icon.ico | macOS: electron-builder generate .icns dari icon-1024.png
@@ -57,6 +58,11 @@ win:
         - x64
   icon: assets/icon.ico
   executableName: Monevra
+  # Runtime node.exe khusus Windows (spawn backend). Tidak disertakan di macOS/Linux
+  # (di sana pakai `node` dari PATH — lihat NODE_BIN di main.js).
+  extraResources:
+    - from: node.exe
+      to: node.exe
 
 # Installer NSIS
 nsis:
