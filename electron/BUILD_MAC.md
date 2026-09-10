@@ -1,5 +1,25 @@
 # Monevra Desktop — Build & Jalankan di macOS
 
+## PENTING: `.dmg` lama TIDAK memuat perbaikan terbaru
+
+Kalau kamu melihat error **`spawn node ENOENT`** padahal `release/*.dmg` sudah ada,
+itu artinya `.dmg` tersebut **build lama** (dibuat sebelum kode diperbaiki).
+Perbaikan ada di file kode (`electron/main.js`, `scripts/setup.mjs`,
+`electron-builder.yml`) — **harus rebuild** supaya ikut masuk ke `.dmg`:
+
+```bash
+cd ~/Monevra            # atau lokasi clone kamu
+git pull                 # ambil perbaikan terbaru
+node scripts/setup.mjs   # siapkan deps + vendor + binary node
+cd electron
+rm -rf release           # buang build lama (penting!)
+npm run build:mac        # BUILD ULANG (.dmg baru)
+```
+
+Lalu buka `.dmg` **yang baru** (cek tanggal file-nya di `electron/release/`).
+
+---
+
 ## Ringkasan
 
 `electron-builder.yml` + `package.json` sudah mendukung build macOS.
@@ -158,11 +178,10 @@ dengan environment minimal — **PATH terminal tidak diwarisi**, sehingga
 `/opt/homebrew/bin` (lokasi Node Homebrew) tidak terlihat → `spawn('node')` gagal
 `ENOENT`.
 
-Solusi di `main.js` (`resolveNodeBin()`): cari Node di **path absolut** yang umum
-dipakai macOS, tidak bergantung PATH:
+Solusi di `main.js` (`resolveNodeBin()`): cari binary Node dengan urutan:
 
 ```
-1. resources/node            ← kalau kamu bundle binary Node (opsional)
+1. resources/node            ← binary Node yang DI-BUNDLE (paling andal)
 2. ~/.nvm/versions/node/*/bin/node   ← nvm (versi tertinggi)
 3. /opt/homebrew/bin/node    ← Homebrew Apple Silicon
 4. /usr/local/bin/node       ← Homebrew Intel / installer resmi nodejs.org
@@ -171,24 +190,17 @@ dipakai macOS, tidak bergantung PATH:
 7. 'node'                    ← fallback terakhir (PATH)
 ```
 
+**Cara paling andal: bundle Node (default via setup.mjs).**
+`node scripts/setup.mjs` di macOS otomatis menyalin binary Node ke
+`electron/node-<arch>`, dan `mac.extraResources` membundelnya menjadi
+`resources/node` di dalam app. Dengan begitu app **jalan tanpa Node terinstall**
+di mesin target — ini menyelesaikan `spawn node ENOENT` secara tuntas.
+
 **Cek Node kamu terinstall di mana:**
 ```bash
 which node        # contoh: /opt/homebrew/bin/node
 node --version
 ```
-
-**Kalau mau app jalan TANPA Node terinstall di mesin target** (mis. dibagikan ke
-orang lain): bundle binary Node ke dalam app. Unduh
-`node-vXX-darwin-arm64.tar.gz` dari nodejs.org, ekstrak `bin/node` ke
-`electron/node` (arm64) / `electron/node-x64`, lalu tambahkan ke `mac.extraResources`:
-
-```yaml
-mac:
-  extraResources:
-    - from: node            # arm64
-      to: node
-```
-`resolveNodeBin()` akan memakai `resources/node` lebih dulu.
 
 ---
 

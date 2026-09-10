@@ -49,6 +49,12 @@ mac:
   category: public.app-category.finance
   darkModeSupport: true
   artifactName: Monevra-${version}-${arch}.${ext}
+  # Binary Node ikut di-bundle → app TIDAK bergantung Node/PATH di mesin user.
+  # `scripts/setup.mjs` menyalin node ke electron/node-<arch> saat setup di macOS.
+  # (kalau file tidak ada, electron-builder hanya warn → fallback ke resolveNodeBin)
+  extraResources:
+    - from: node-${arch}
+      to: node
 
 # Target Windows
 win:

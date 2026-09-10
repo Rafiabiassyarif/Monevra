@@ -17,6 +17,8 @@
  *        - salin node_modules -> vendor/backend/_deps
  *      (electron-builder mengecualikan folder bernama "node_modules",
  *       makanya dinamai "_deps" dan di-rename balik saat runtime)
+ *   5. macOS: salin binary Node ke electron/node supaya ikut ter-bundle —
+ *      app yang dibuka dari Finder tidak mewarisi PATH (spawn ENOENT).
  *
  * Pakai:
  *   node scripts/setup.mjs            # setup lengkap
@@ -63,17 +65,17 @@ const frontendDir = path.join(ROOT, 'frontend');
 const electronDir = path.join(ROOT, 'electron');
 
 if (!skipInstall) {
-  log('1/4 Install dependency (ini butuh internet, agak lama)...');
+  log('1/5 Install dependency (ini butuh internet, agak lama)...');
   run('npm', ['install'], backendDir);
   run('npm', ['install'], frontendDir);
   run('npm', ['install'], electronDir);
   ok('dependency terinstall');
 } else {
-  log('1/4 Install dependency — DILEWATI (--skip-install)');
+  log('1/5 Install dependency — DILEWATI (--skip-install)');
 }
 
 // --- 2. backend/.env -------------------------------------------------------
-log('2/4 Siapkan backend/.env...');
+log('2/5 Siapkan backend/.env...');
 const envPath = path.join(backendDir, '.env');
 const envExample = path.join(backendDir, '.env.example');
 if (!fs.existsSync(envPath)) {
@@ -94,12 +96,12 @@ if (!fs.existsSync(envPath)) {
 }
 
 // --- 3. Build frontend -----------------------------------------------------
-log('3/4 Build frontend (vite) -> frontend/dist ...');
+log('3/5 Build frontend (vite) -> frontend/dist ...');
 run('npm', ['run', 'build'], frontendDir);
 ok('frontend/dist siap');
 
 // --- 4. Staging backend ke electron/vendor/backend -------------------------
-log('4/4 Staging backend -> electron/vendor/backend ...');
+log('4/5 Staging backend -> electron/vendor/backend ...');
 const vendorBackend = path.join(electronDir, 'vendor', 'backend');
 fs.rmSync(path.join(electronDir, 'vendor'), { recursive: true, force: true });
 copyDir(backendDir, vendorBackend, (name) => name !== 'node_modules');
@@ -114,6 +116,29 @@ if (fs.existsSync(depsSrc)) {
 }
 
 ok('staging selesai: ' + path.relative(ROOT, vendorBackend));
+
+// --- 5. macOS: bundle binary Node -----------------------------------------
+// App yang di-launch dari Finder/.dmg TIDAK mewarisi PATH terminal → spawn('node')
+// = ENOENT. Solusi: salin binary Node ke electron/node-<arch>, lalu electron-builder
+// membundelnya ke resources/node (lihat mac.extraResources, pakai makro ${arch}).
+if (process.platform === 'darwin') {
+  log('5/5 macOS: siapkan binary Node utk di-bundle...');
+  const arch = process.arch; // 'arm64' | 'x64'
+  const nodeSrc = process.execPath; // binary node yang menjalankan script ini
+  const nodeDest = path.join(electronDir, `node-${arch}`);
+  try {
+    fs.copyFileSync(nodeSrc, nodeDest);
+    fs.chmodSync(nodeDest, 0o755);
+    ok(`Node (${arch}) di-bundle: ${path.relative(ROOT, nodeDest)}`);
+    if (arch === 'arm64') {
+      warn('build x64 di mesin arm64: siapkan node-x64 terpisah (atau build di mesin Intel)');
+    }
+  } catch (e) {
+    warn(`gagal menyalin Node (${e.message}). App fallback ke Node dari PATH.`);
+  }
+} else {
+  log('5/5 macOS: bundle Node — DILEWATI (bukan macOS)');
+}
 
 console.log(`
 \x1b[32m╔══════════════════════════════════════════════════════╗

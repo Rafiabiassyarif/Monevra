@@ -2,5 +2,7 @@ node_modules/
 release/
 dist/
 node.exe
+node-arm64
+node-x64
 vendor/
 *.log
