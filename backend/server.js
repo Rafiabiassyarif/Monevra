@@ -71,7 +71,14 @@ app.use(helmet({
     },
   } : false,
 }));
-const allowedOrigins = process.env.APP_URL ? process.env.APP_URL.split(',') : ['http://localhost:3000'];
+const rawOrigins = [
+  ...(process.env.APP_URL ? process.env.APP_URL.split(',') : []),
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : []),
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+const allowedOrigins = [...new Set(rawOrigins.map(s => s.trim().replace(/\/+$/, '')).filter(Boolean))];
 app.use(cors({ origin: allowedOrigins, credentials: true, allowedHeaders: ['Content-Type', 'Authorization'] }));
 
 const globalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { message: 'Terlalu banyak permintaan.' } });
@@ -336,7 +343,7 @@ app.post('/api/auth/google', asyncHandler(async (req, res) => {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const origin = req.headers.origin || (process.env.APP_URL ? process.env.APP_URL.split(',')[0] : 'http://localhost:3000');
+  const origin = (req.headers.origin || (process.env.APP_URL ? process.env.APP_URL.split(',')[0] : 'http://localhost:3000')).trim().replace(/\/+$/, '');
   const redirectUri = `${origin}/auth/callback/google`;
 
   // 1. Exchange code for tokens
@@ -412,7 +419,7 @@ app.post('/api/auth/github', asyncHandler(async (req, res) => {
     return res.status(500).json({ message: 'GitHub OAuth is not configured on the server.' });
   }
 
-  const origin = req.headers.origin || (process.env.APP_URL ? process.env.APP_URL.split(',')[0] : 'http://localhost:3000');
+  const origin = (req.headers.origin || (process.env.APP_URL ? process.env.APP_URL.split(',')[0] : 'http://localhost:3000')).trim().replace(/\/+$/, '');
   const redirectUri = `${origin}/auth/callback/github`;
 
   // 1. Exchange code for access token

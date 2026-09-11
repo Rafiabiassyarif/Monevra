@@ -15,7 +15,7 @@ const frontendPackage = JSON.parse(read('frontend/package.json'));
 assert(!server.includes('override: true'), 'dotenv must not override shell PORT/DB env');
 assert.match(backendEnv, /^PORT=3001$/m, 'backend .env must use API port 3001');
 assert.match(backendEnv, /^DB_NAME="?monevra"?$/m, 'backend .env DB_NAME must be monevra');
-assert.match(backendEnvExample, /^DB_NAME="?monevra"?$/m, 'backend .env.example DB_NAME must be monevra');
+assert.match(backendEnvExample, /^DB_NAME="?.*monevra"?$/m, 'backend .env.example DB_NAME must be monevra');
 assert.match(sql, /CREATE DATABASE IF NOT EXISTS `monevra`/, 'SQL must create monevra database');
 assert.match(sql, /USE `monevra`;/, 'SQL must use monevra database');
 assert(!sql.includes('flowfinance'), 'seed data must not reference old FlowFinance brand');

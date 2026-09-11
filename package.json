@@ -5,6 +5,7 @@
     "install": "npm install --prefix backend",
     "setup": "node scripts/setup.mjs",
     "start": "node scripts/start.mjs",
-    "dev": "node scripts/dev.mjs"
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build --prefix frontend"
   }
 }
